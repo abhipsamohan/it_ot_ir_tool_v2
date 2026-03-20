@@ -1,0 +1,122 @@
+{
+  "assets": {
+    "plc_main": {
+      "name": "Main Production PLC",
+      "type": "PLC",
+      "criticality": "critical",
+      "shutdown_safe": false,
+      "notes": "Controls primary production line. Shutdown causes full production halt.",
+      "depends_on": [],
+      "depended_on_by": [
+        "pump_controller_1",
+        "pump_controller_2",
+        "valve_controller_1",
+        "hmi_screen_1"
+      ]
+    },
+    "pump_controller_1": {
+      "name": "Pump Controller 1",
+      "type": "PLC",
+      "criticality": "high",
+      "shutdown_safe": false,
+      "notes": "Controls primary water/fluid pump. High-pressure system.",
+      "depends_on": ["plc_main", "power_supply_pump"],
+      "depended_on_by": []
+    },
+    "pump_controller_2": {
+      "name": "Pump Controller 2 (Backup)",
+      "type": "PLC",
+      "criticality": "high",
+      "shutdown_safe": true,
+      "notes": "Backup pump controller. Can be shut down if primary pump is running.",
+      "depends_on": ["plc_main", "power_supply_pump"],
+      "depended_on_by": []
+    },
+    "valve_controller_1": {
+      "name": "Valve Controller (High Pressure)",
+      "type": "PLC",
+      "criticality": "high",
+      "shutdown_safe": false,
+      "notes": "Controls high-pressure relief valves. Cannot be shut down safely without pressure relief.",
+      "depends_on": ["plc_main"],
+      "depended_on_by": []
+    },
+    "power_supply_main": {
+      "name": "Main Power Supply",
+      "type": "power",
+      "criticality": "critical",
+      "shutdown_safe": false,
+      "notes": "Powers all critical OT equipment. Disconnecting causes full facility outage.",
+      "depends_on": [],
+      "depended_on_by": [
+        "plc_main",
+        "network_switch_core",
+        "windows_server",
+        "monitoring_system",
+        "production_database"
+      ]
+    },
+    "power_supply_pump": {
+      "name": "Pump Power Supply",
+      "type": "power",
+      "criticality": "high",
+      "shutdown_safe": false,
+      "notes": "Dedicated power for pump controllers.",
+      "depends_on": ["power_supply_main"],
+      "depended_on_by": [
+        "pump_controller_1",
+        "pump_controller_2"
+      ]
+    },
+    "network_switch_core": {
+      "name": "Core Network Switch",
+      "type": "network",
+      "criticality": "high",
+      "shutdown_safe": false,
+      "notes": "Core switch connecting all OT devices. Shutdown isolates entire OT network.",
+      "depends_on": ["power_supply_main"],
+      "depended_on_by": [
+        "plc_main",
+        "hmi_screen_1",
+        "windows_server",
+        "monitoring_system"
+      ]
+    },
+    "windows_server": {
+      "name": "Windows Engineering Server",
+      "type": "IT",
+      "criticality": "medium",
+      "shutdown_safe": true,
+      "notes": "Engineering workstation for PLC programming. Not required for production.",
+      "depends_on": ["power_supply_main", "network_switch_core"],
+      "depended_on_by": []
+    },
+    "hmi_screen_1": {
+      "name": "HMI Screen 1",
+      "type": "HMI",
+      "criticality": "medium",
+      "shutdown_safe": true,
+      "notes": "Operator HMI. Display only - process continues without it.",
+      "depends_on": ["plc_main", "network_switch_core"],
+      "depended_on_by": []
+    },
+    "monitoring_system": {
+      "name": "Process Monitoring System",
+      "type": "monitoring",
+      "criticality": "medium",
+      "shutdown_safe": true,
+      "notes": "Monitoring and alerting system. Shutdown reduces visibility but does not affect production.",
+      "depends_on": ["power_supply_main", "network_switch_core"],
+      "depended_on_by": []
+    },
+    "production_database": {
+      "name": "Production Data Historian",
+      "type": "database",
+      "criticality": "high",
+      "shutdown_safe": true,
+      "notes": "Stores production data and historian records. Shutdown causes data loss but not process disruption.",
+      "depends_on": ["power_supply_main"],
+      "depended_on_by": ["windows_server", "monitoring_system"]
+    }
+  }
+}

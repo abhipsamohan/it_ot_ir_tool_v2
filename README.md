@@ -1,52 +1,93 @@
-# IT/OT Incident Response Tool
+# IT/OT Incident Response Tool v2
 
-## Overview  
-The IT/OT Incident Response Tool is designed to assist organizations in managing and responding to incidents within their Information Technology (IT) and Operational Technology (OT) environments. This tool simplifies the processes of identifying, analyzing, and mitigating incidents, ensuring faster recovery and reduced downtime.
+A production-ready, rule-based IT/OT incident response middleware for small industrial facilities.
+Runs on Raspberry Pi 4. No AI/ML — just simple, interpretable rules that plant managers can read and modify.
 
-## Features  
-- **Incident Tracking**: Keep a log of all incidents, including descriptions, severity, impacted systems, and resolution status.
-- **Integration capabilities**: Seamlessly connect with existing IT and OT monitoring systems to receive alerts and data.
-- **Automated Response**: Implement predefined response actions to incidents based on their classification and severity.
-- **Reporting and Analytics**: Generate reports on incident trends, response times, and system performance metrics.
-- **User Management**: Role-based access to ensure that users have access to relevant data and functionalities.
+## Features
 
-## Architecture  
-The tool is built on a microservices architecture, allowing for scalable and independent deployment of various components. The main components include:
-- **Frontend**: A user-friendly interface for incident reporting and management.
-- **Backend**: Handles data storage, processing, and communication between the frontend and other services.
-- **Database**: Stores all incident data, user accounts, and configuration settings.
-- **Integration Services**: Connects with IT/OT systems to receive data and send alerts.
+- **Rule-based detection** — human-readable JSON rules, no neural networks
+- **Brute force detection** — 5+ failed logins in 5 minutes on same OT asset
+- **Multi-stage attack detection** — reconnaissance → exploitation chain
+- **Blast radius calculation** — cascading dependency impact analysis
+- **Safe-by-default response** — auto-executes safe actions, queues dangerous ones for approval
+- **Web dashboard** — real-time incidents, approval buttons, auto-refresh
+- **Full audit trail** — every decision logged for compliance
 
-## Setup Instructions  
-1. **Prerequisites**: Ensure you have the following installed:
-   - Node.js (version >= 14)
-   - MongoDB (for database storage)
-   - Docker (optional, for containerized deployment)
+## Quick Start
 
-2. **Clone the repository**:  
-   ```bash
-   git clone https://github.com/abhipsamohan/it_ot_ir_tool_v2.git
-   cd it_ot_ir_tool_v2
-   ```
+```bash
+./setup.sh                    # Install deps, init DB
+source venv/bin/activate
+python3 simulate.py           # Run 3 attack scenarios
+python3 app.py                # Start dashboard at http://localhost:5000
+pytest tests/ -v              # Run all 47 unit tests
+```
 
-3. **Install dependencies**:  
-   ```bash
-   npm install
-   ```
+## Project Structure
 
-4. **Configure environment variables**: Create a `.env` file in the root directory and set the necessary configuration values.
+```
+it_ot_ir_tool_v2/
+├── app.py                        # Flask REST API + dashboard
+├── simulate.py                   # End-to-end simulation (3 scenarios)
+├── config/
+│   ├── settings.py               # Environment-based config
+│   ├── rules.json                # Detection rules (editable)
+│   └── dependencies.json         # Asset dependency map (editable)
+├── engine/
+│   ├── rule_engine.py            # Pattern matching + correlation
+│   ├── dependency_engine.py      # Blast radius calculation
+│   └── safe_response_engine.py   # Response orchestration
+├── ingestion/
+│   └── alert_generator.py        # Test alert generator
+├── models/
+│   └── database.py               # SQLAlchemy ORM models
+├── templates/
+│   └── dashboard.html            # Web dashboard
+├── tests/
+│   ├── test_rule_engine.py
+│   ├── test_dependency_engine.py
+│   └── test_safe_response_engine.py
+├── requirements.txt
+├── setup.sh
+├── .env.example
+└── ARCHITECTURE.md
+```
 
-5. **Start the application**:  
-   ```bash
-   npm start
-   ```
+## API Endpoints
 
-## Usage Guide  
-1. Access the tool through your web browser by navigating to `http://localhost:3000`.
-2. Use the login screen to access your account (default credentials: admin/admin).
-3. Begin reporting incidents by filling out the incident report form, detailing the incident type and severity.
-4. Monitor ongoing incidents through the incident dashboard.
-5. Utilize the reporting tool to generate incident analysis reports.
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/scan-alerts` | Scan alerts dir, create incidents |
+| POST | `/api/generate-test-alerts` | Generate test scenario alerts |
+| GET | `/api/incidents` | List incidents (`?severity=&status=`) |
+| GET | `/api/incident/<id>` | Get incident details |
+| GET | `/api/dashboard-stats` | Dashboard statistics |
+| GET | `/api/pending-approvals` | Dangerous actions awaiting approval |
+| POST | `/api/approve-action` | Approve or deny a dangerous action |
 
-## Conclusion  
-This tool aims to streamline the incident response process, improving both IT and OT operational resilience. For further details and support, refer to the [documentation](link_to_full_documentation) or contact the support team.
+## Configuration
+
+Copy `.env.example` to `.env` and edit as needed. Key settings:
+
+| Variable | Default | Description |
+|---|---|---|
+| `FLASK_ENV` | `development` | `development` / `production` / `testing` |
+| `DATABASE_URL` | `sqlite:///data/incidents.db` | SQLAlchemy DB URL |
+| `ALERTS_DIR` | `data/alerts` | Directory polled for alert JSON files |
+| `BRUTE_FORCE_THRESHOLD` | `5` | Failed logins to trigger brute force |
+| `BRUTE_FORCE_WINDOW_MINUTES` | `5` | Time window for brute force detection |
+
+## Testing
+
+```bash
+pytest tests/ -v          # All 47 unit tests
+python3 simulate.py       # 3 integration scenarios
+```
+
+## Deployment on Raspberry Pi
+
+See `ARCHITECTURE.md` for the systemd service unit file and production configuration guide.
+
+## Architecture
+
+See `ARCHITECTURE.md` for full system design, data flows, risk scoring formula, and failure modes.

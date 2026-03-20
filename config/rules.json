@@ -1,0 +1,127 @@
+{
+  "rules": [
+    {
+      "id": "RULE-001",
+      "name": "Brute Force Attack",
+      "description": "5 or more failed login attempts detected in a 5-minute window",
+      "event_type": "FAILED_LOGIN",
+      "conditions": {
+        "min_count": 5,
+        "window_minutes": 5
+      },
+      "severity_multiplier": 1.5,
+      "response_actions": ["block_ip", "alert_team", "enable_logging"],
+      "explanation": "Multiple failed login attempts detected. This is a likely brute-force or credential stuffing attack targeting authentication.",
+      "do_steps": [
+        "Block the source IP address immediately",
+        "Review authentication logs for the affected asset",
+        "Notify the security team and OT engineer",
+        "Enable detailed logging on the affected device",
+        "Check for successful logins from the same source"
+      ],
+      "dont_steps": [
+        "Do NOT shut down the PLC without OT engineer approval",
+        "Do NOT delete logs as they are needed for investigation",
+        "Do NOT change passwords remotely without authorization"
+      ]
+    },
+    {
+      "id": "RULE-002",
+      "name": "Unauthorized PLC Modification",
+      "description": "Unauthorized change to PLC program or configuration detected",
+      "event_type": "PLC_PROGRAM_CHANGE",
+      "conditions": {
+        "asset_criticality": ["critical", "high"]
+      },
+      "severity_multiplier": 2.0,
+      "response_actions": ["alert_team", "take_snapshot", "enable_logging", "plc_shutdown"],
+      "explanation": "An unauthorized modification to a PLC program was detected. This could indicate sabotage, ransomware, or insider threat targeting critical industrial systems.",
+      "do_steps": [
+        "Alert OT engineer and security team immediately",
+        "Take a snapshot of current PLC state before any changes",
+        "Enable enhanced logging on the PLC and connected network",
+        "Document the unauthorized change for compliance",
+        "Initiate change verification procedure with OT engineer"
+      ],
+      "dont_steps": [
+        "Do NOT revert PLC program without OT engineer assessment",
+        "Do NOT shut down PLC without evaluating process impact",
+        "Do NOT allow further remote access until investigation complete",
+        "Do NOT assume this is a legitimate change without verification"
+      ]
+    },
+    {
+      "id": "RULE-003",
+      "name": "Malware Detected",
+      "description": "Host-based malware or malicious process detected on OT network",
+      "event_type": "MALWARE_DETECTED",
+      "conditions": {
+        "any": true
+      },
+      "severity_multiplier": 1.8,
+      "response_actions": ["alert_team", "take_snapshot", "network_segment_monitor", "isolate_network"],
+      "explanation": "Malicious software or process has been detected. This could spread to other systems and compromise OT network integrity.",
+      "do_steps": [
+        "Alert security team and OT engineer immediately",
+        "Take forensic snapshot of affected system",
+        "Increase network monitoring for lateral movement",
+        "Identify all systems that communicated with infected host",
+        "Prepare network isolation plan pending engineer approval"
+      ],
+      "dont_steps": [
+        "Do NOT isolate network without OT engineer approval",
+        "Do NOT delete malware files without forensic snapshot",
+        "Do NOT run antivirus scans that could interfere with OT processes",
+        "Do NOT restart infected system without checking process safety"
+      ]
+    },
+    {
+      "id": "RULE-004",
+      "name": "Network Scanning / Reconnaissance",
+      "description": "Network scanning or reconnaissance activity detected from an internal or external host",
+      "event_type": "NETWORK_SCAN",
+      "conditions": {
+        "any": true
+      },
+      "severity_multiplier": 1.2,
+      "response_actions": ["block_ip", "alert_team", "network_segment_monitor"],
+      "explanation": "A system is scanning the network for open ports or services. This is a common first stage in cyber attacks targeting industrial systems.",
+      "do_steps": [
+        "Block the scanning source IP",
+        "Review firewall logs for the scanning activity",
+        "Alert security team to investigate source",
+        "Enable enhanced network monitoring",
+        "Check if scan originated from inside or outside OT network"
+      ],
+      "dont_steps": [
+        "Do NOT assume internal scanning is safe without investigation",
+        "Do NOT ignore even low-severity scans in OT environments",
+        "Do NOT block critical control traffic while blocking scanner"
+      ]
+    },
+    {
+      "id": "RULE-005",
+      "name": "Firmware Modification",
+      "description": "Unauthorized firmware or configuration change detected on OT device",
+      "event_type": "FIRMWARE_MODIFICATION",
+      "conditions": {
+        "any": true
+      },
+      "severity_multiplier": 2.0,
+      "response_actions": ["alert_team", "take_snapshot", "enable_logging", "plc_shutdown"],
+      "explanation": "Unauthorized firmware modification detected. This could indicate a supply chain attack or persistent threat actor targeting OT device integrity.",
+      "do_steps": [
+        "Alert OT engineer and security team immediately",
+        "Take snapshot of firmware version and configuration",
+        "Enable detailed logging on all connected OT devices",
+        "Verify firmware hash against known-good baseline",
+        "Document all changes for compliance and investigation"
+      ],
+      "dont_steps": [
+        "Do NOT flash new firmware without verifying source integrity",
+        "Do NOT shut down device mid-operation without safety assessment",
+        "Do NOT allow remote firmware updates during investigation"
+      ]
+    }
+  ]
+}
