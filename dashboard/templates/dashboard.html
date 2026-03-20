@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Portable IT-OT SOC Dashboard</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    background:#0f172a;
+    color:white;
+    padding:30px;
+}
+
+h1{
+    color:#38bdf8;
+}
+
+button{
+    padding:10px 20px;
+    margin:10px 5px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    background:#1e293b;
+}
+
+th,td{
+    padding:10px;
+    border-bottom:1px solid #334155;
+    text-align:left;
+}
+
+th{
+    background:#334155;
+}
+
+tr:hover{
+    background:#475569;
+}
+
+.warning{
+    color:#facc15;
+    font-weight:bold;
+}
+
+.low{color:#22c55e}
+.medium{color:#facc15}
+.high{color:#fb923c}
+.critical{color:#ef4444}
+
+.panel{
+    margin-top:30px;
+    background:#1e293b;
+    padding:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Portable IT-OT SOC Dashboard</h1>
+
+<button onclick="scanAlerts()">Scan Alerts</button>
+<button onclick="loadIncidents()">Refresh</button>
+
+<table>
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Event</th>
+<th>Asset</th>
+<th>Severity</th>
+<th>Risk</th>
+<th>Criticality</th>
+<th>Warning</th>
+<th>Time</th>
+</tr>
+
+</thead>
+
+<tbody id="incidentTable"></tbody>
+
+</table>
+
+<div class="panel">
+
+<h2>Incident Response Guidance</h2>
+
+<div id="incidentDetails">
+Select an incident to view response guidance
+</div>
+
+</div>
+
+<script>
+
+let incidents=[]
+
+async function scanAlerts(){
+
+    const res = await fetch('/api/scan')
+    const data = await res.json()
+
+    alert("Processed "+data.count+" alerts")
+
+    loadIncidents()
+}
+
+async function loadIncidents(){
+
+    const res = await fetch('/api/incidents')
+    incidents = await res.json()
+
+    const table = document.getElementById("incidentTable")
+
+    table.innerHTML=""
+
+    incidents.forEach((i,index)=>{
+
+        table.innerHTML += `
+        <tr onclick="showIncident(${index})">
+
+        <td>${i.id}</td>
+        <td>${i.event_type}</td>
+        <td>${i.asset_name}</td>
+        <td class="${i.severity}">${i.severity}</td>
+        <td class="${i.risk_level.toLowerCase()}">${i.risk_level}</td>
+        <td>${i.criticality}</td>
+        <td class="warning">${i.warning || ""}</td>
+        <td>${i.timestamp}</td>
+
+        </tr>
+        `
+    })
+}
+
+function showIncident(index){
+
+    const i = incidents[index]
+
+    let steps=""
+    let doList=""
+    let dontList=""
+
+    if(i.response_steps){
+        i.response_steps.forEach(step=>{
+            steps += "<li>"+step+"</li>"
+        })
+    }
+
+    if(i.do_steps){
+        i.do_steps.forEach(step=>{
+            doList += "<li>"+step+"</li>"
+        })
+    }
+
+    if(i.dont_steps){
+        i.dont_steps.forEach(step=>{
+            dontList += "<li>"+step+"</li>"
+        })
+    }
+
+    document.getElementById("incidentDetails").innerHTML = `
+    <h3>${i.id}</h3>
+
+    <p><b>Event:</b> ${i.event_type}</p>
+    <p><b>Asset:</b> ${i.asset_name}</p>
+
+    <p><b>Operational Risk Level:</b> ${i.risk_level}</p>
+
+    <p><b>OT Criticality:</b> ${i.criticality}</p>
+
+    <p class="warning">${i.warning || ""}</p>
+
+    <hr>
+
+    <h4> What is happening</h4>
+    <p>${i.explanation || "No explanation available"}</p>
+
+    <h4>!! What NOT to do</h4>
+    <ul>${dontList || "<li>No restrictions</li>"}</ul>
+
+    <h4>!! What to do</h4>
+    <ul>${doList}</ul>
+
+    <h4>=> Recommended Response</h4>
+    <p>${i.response_action}</p>
+
+    <ul>${steps}</ul>
+    `
+}
+
+loadIncidents()
+
+setInterval(loadIncidents,5000)
+
+</script>
+
+</body>
+</html>

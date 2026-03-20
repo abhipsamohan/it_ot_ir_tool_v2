@@ -1,0 +1,29 @@
+{
+  "pump_controller_1": {
+    "system": "Water Pump Controller",
+    "criticality": "high",
+    "shutdown_risk": "high",
+    "safety_impact": "Water supply disruption"
+  },
+
+  "hvac_controller_1": {
+    "system": "HVAC Controller",
+    "criticality": "medium",
+    "shutdown_risk": "medium",
+    "safety_impact": "Temperature control failure"
+  },
+
+  "conveyor_controller_1": {
+    "system": "Industrial Conveyor PLC",
+    "criticality": "high",
+    "shutdown_risk": "high",
+    "safety_impact": "Production halt"
+  },
+
+  "plc_controller_1": {
+    "system": "Main PLC Controller",
+    "criticality": "critical",
+    "shutdown_risk": "high",
+    "safety_impact": "Factory process disruption"
+  }
+}
