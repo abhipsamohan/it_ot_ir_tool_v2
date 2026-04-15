@@ -9,10 +9,12 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, render_template, jsonify, request
 from engine.decision_engine import DecisionEngine
+from engine.adapters.detector import FormatDetector
 
 app = Flask(__name__)
 
 engine = DecisionEngine()
+detector = FormatDetector()
 
 _ESCALATION_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -54,34 +56,48 @@ def dashboard():
 @app.route("/api/alert", methods=["POST"])
 def ingest_alert():
     """
-    Accepts a JSON alert payload and processes it immediately through the
-    decision engine.  Enables integration with real IDS/SIEM/firewall sources
-    without requiring file drops.
+    Accept alerts in ANY format:
+    - JSON (standard IT-OT format)
+    - CEF/Syslog (Splunk, Arista, Palo Alto)
+    - REST/Webhook (SOAR platforms: Phantom, Demisto, ServiceNow)
 
-    Expected payload:
-    {
-        "event_type": "FAILED_LOGIN",
-        "asset_id": "pump_controller_1",
-        "severity": "high",
-        "details": { ... }          (optional)
-    }
+    Auto-detects format and processes through the decision engine.
     """
-    data = request.get_json(silent=True)
 
-    if not data:
-        return jsonify({"error": "Invalid or missing JSON body"}), 400
+    # Get raw data — JSON body or plain-text CEF/Syslog string
+    if request.is_json:
+        raw_data = request.get_json()
+    else:
+        raw_data = request.get_data(as_text=True)
 
-    required = ["event_type", "asset_id", "severity"]
-    missing = [f for f in required if not data.get(f)]
-    if missing:
-        return jsonify({"error": f"Missing required fields: {missing}"}), 400
+    try:
+        normalized_alert, adapter_used = detector.detect_and_parse(raw_data)
+        print(f"[adapter] Detected: {adapter_used}")
+    except ValueError:
+        return jsonify({"error": "Could not parse alert: unsupported or malformed format"}), 400
 
-    incident = engine.process_alert_dict(data)
+    incident = engine.process_alert_dict(normalized_alert)
 
     if incident is None:
         return jsonify({"error": "Failed to process alert"}), 500
 
     return jsonify(incident), 201
+
+
+# ---------------------------------------------------------------------------
+# ADAPTERS — list supported alert formats
+# ---------------------------------------------------------------------------
+
+@app.route("/api/adapters")
+def list_adapters():
+    """Return list of supported alert formats and their adapters."""
+    adapters_info = []
+    for adapter in detector.adapters:
+        adapters_info.append({
+            "name": adapter.format_name,
+            "example": adapter.get_example(),
+        })
+    return jsonify(adapters_info)
 
 
 # ---------------------------------------------------------------------------
