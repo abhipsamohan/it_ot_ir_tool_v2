@@ -1,0 +1,22 @@
+{
+  "contacts": [
+    {
+      "role": "OT Engineer On-Call",
+      "name": "OT Engineer",
+      "phone": "+1-555-0100",
+      "note": "Update with your plant on-call contact"
+    },
+    {
+      "role": "Plant Manager",
+      "name": "Plant Manager",
+      "phone": "+1-555-0101",
+      "note": "Escalate if engineer is unreachable"
+    }
+  ],
+  "thresholds": {
+    "CRITICAL": "Immediately notify OT Engineer On-Call — do not wait",
+    "HIGH": "Notify OT Engineer within 30 minutes",
+    "MEDIUM": "Review within 4 hours — log findings",
+    "LOW": "Review during next shift handover"
+  }
+}
