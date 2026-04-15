@@ -1,29 +1,101 @@
 {
-  "pump_controller_1": {
-    "system": "Water Pump Controller",
-    "criticality": "high",
+  "water_treatment_plc": {
+    "system": "Water Treatment Plant PLC",
+    "criticality": "critical",
     "shutdown_risk": "high",
-    "safety_impact": "Water supply disruption"
+    "safety_impact": "Disruption to municipal water supply; potential chemical dosing failure affecting public health",
+    "protocol": "DNP3",
+    "network_segment": "CRITICAL",
+    "location": "Pune, Maharashtra"
   },
 
-  "hvac_controller_1": {
-    "system": "HVAC Controller",
+  "textile_mill_control": {
+    "system": "Textile Mill Control System",
+    "criticality": "high",
+    "shutdown_risk": "high",
+    "safety_impact": "Production halt; risk of machinery over-speed causing mechanical damage and worker injury",
+    "protocol": "Profinet",
+    "network_segment": "OT_SEGMENT_1",
+    "location": "Surat, Gujarat"
+  },
+
+  "power_distribution_scada": {
+    "system": "Power Distribution SCADA",
+    "criticality": "critical",
+    "shutdown_risk": "high",
+    "safety_impact": "Loss of power to industrial zone; cascading failure risk for connected critical assets",
+    "protocol": "DNP3",
+    "network_segment": "CRITICAL",
+    "location": "Nagpur, Maharashtra"
+  },
+
+  "manufacturing_robot_ctrl": {
+    "system": "Manufacturing Robot Controller",
+    "criticality": "high",
+    "shutdown_risk": "high",
+    "safety_impact": "Uncontrolled robotic movement; risk of physical injury to operators on factory floor",
+    "protocol": "Modbus",
+    "network_segment": "OT_SEGMENT_1",
+    "location": "Chennai, Tamil Nadu"
+  },
+
+  "hvac_controller": {
+    "system": "HVAC System Controller",
     "criticality": "medium",
     "shutdown_risk": "medium",
-    "safety_impact": "Temperature control failure"
+    "safety_impact": "Temperature and humidity excursion in server room or clean-room manufacturing area",
+    "protocol": "BACnet",
+    "network_segment": "OT_SEGMENT_2",
+    "location": "Bengaluru, Karnataka"
   },
 
-  "conveyor_controller_1": {
-    "system": "Industrial Conveyor PLC",
+  "building_mgmt_system": {
+    "system": "Building Management System",
+    "criticality": "medium",
+    "shutdown_risk": "low",
+    "safety_impact": "Loss of environmental monitoring; fire suppression and access control may be affected",
+    "protocol": "OPC-UA",
+    "network_segment": "DMZ",
+    "location": "Hyderabad, Telangana"
+  },
+
+  "backup_power_system": {
+    "system": "Backup Power System (UPS/Inverter Controller)",
+    "criticality": "critical",
+    "shutdown_risk": "high",
+    "safety_impact": "Power failure to critical OT systems during grid outage; potential safety interlock loss",
+    "protocol": "Modbus",
+    "network_segment": "CRITICAL",
+    "location": "Mumbai, Maharashtra"
+  },
+
+  "network_gateway": {
+    "system": "OT Network Gateway / Firewall",
+    "criticality": "medium",
+    "shutdown_risk": "medium",
+    "safety_impact": "Loss of OT network segmentation; IT-OT boundary may collapse allowing uncontrolled access",
+    "protocol": "TCP/IP",
+    "network_segment": "DMZ",
+    "location": "Delhi NCR"
+  },
+
+  "pump_controller_1": {
+    "system": "Water Pump Controller (Legacy)",
     "criticality": "high",
     "shutdown_risk": "high",
-    "safety_impact": "Production halt"
+    "safety_impact": "Water supply disruption to industrial cooling systems",
+    "protocol": "Modbus",
+    "network_segment": "OT_SEGMENT_1",
+    "location": "Ahmedabad, Gujarat"
   },
 
   "plc_controller_1": {
     "system": "Main PLC Controller",
     "criticality": "critical",
     "shutdown_risk": "high",
-    "safety_impact": "Factory process disruption"
+    "safety_impact": "Factory-wide process disruption; potential loss of safety interlock functionality",
+    "protocol": "Modbus",
+    "network_segment": "CRITICAL",
+    "location": "Coimbatore, Tamil Nadu"
   }
 }

@@ -2,21 +2,106 @@
   "contacts": [
     {
       "role": "OT Engineer On-Call",
-      "name": "OT Engineer",
-      "phone": "+1-555-0100",
-      "note": "Update with your plant on-call contact"
+      "name": "Rajesh Kumar",
+      "phone": "+91-9876543210",
+      "email": "rajesh.kumar@plant.in",
+      "availability": "24x7 on-call rotation",
+      "note": "Primary contact for all OT system incidents. Carries pager during off-hours."
+    },
+    {
+      "role": "Security Lead",
+      "name": "Priya Sharma",
+      "phone": "+91-9845012345",
+      "email": "priya.sharma@plant.in",
+      "availability": "Business hours (09:00–18:00 IST); emergency line available",
+      "note": "Coordinates IT and OT security response. Liaises with CERT-IN for critical incidents."
     },
     {
       "role": "Plant Manager",
-      "name": "Plant Manager",
-      "phone": "+1-555-0101",
-      "note": "Escalate if engineer is unreachable"
+      "name": "Suresh Nair",
+      "phone": "+91-9112233445",
+      "email": "suresh.nair@plant.in",
+      "availability": "Business hours; available via emergency line 24x7",
+      "note": "Final authority for production shutdown decisions. Must be notified for all CRITICAL incidents."
+    },
+    {
+      "role": "Regulatory Authority – CERT-IN",
+      "name": "CERT-IN Incident Response Helpdesk",
+      "phone": "+91-11-24368572",
+      "email": "incident@cert-in.org.in",
+      "availability": "24x7 helpdesk",
+      "note": "Indian Computer Emergency Response Team. Mandatory reporting for critical infrastructure incidents under IT Act 2000 Section 70B. Report within 6 hours of detection."
+    },
+    {
+      "role": "Regulatory Authority – DSCI",
+      "name": "DSCI Cyber Emergency",
+      "phone": "+91-11-26104433",
+      "email": "contact@dsci.in",
+      "availability": "Business hours (09:00–17:30 IST)",
+      "note": "Data Security Council of India. Consult for data-breach aspects of OT incidents involving personal data of employees or customers."
     }
   ],
-  "thresholds": {
-    "CRITICAL": "Immediately notify OT Engineer On-Call — do not wait",
-    "HIGH": "Notify OT Engineer within 30 minutes",
-    "MEDIUM": "Review within 4 hours — log findings",
-    "LOW": "Review during next shift handover"
+  "escalation_rules": {
+    "LOW": {
+      "response_time_sla": "Review within next shift handover (≤8 hours)",
+      "notify": [],
+      "actions": [
+        "Log the incident with full details",
+        "Review during next shift briefing",
+        "Document in shift handover report"
+      ]
+    },
+    "MEDIUM": {
+      "response_time_sla": "Acknowledge within 1 hour; resolve or escalate within 4 hours",
+      "notify": ["OT Engineer On-Call"],
+      "actions": [
+        "Notify OT Engineer On-Call via phone",
+        "Investigate and document root cause",
+        "Apply temporary mitigation if available",
+        "Escalate to Security Lead if not resolved within 4 hours"
+      ]
+    },
+    "HIGH": {
+      "response_time_sla": "Acknowledge within 30 minutes; initiate response within 1 hour",
+      "notify": ["OT Engineer On-Call", "Security Lead"],
+      "actions": [
+        "Immediately notify OT Engineer and Security Lead",
+        "Isolate affected asset from OT network if safe to do so",
+        "Preserve all logs and network traffic captures",
+        "Begin formal incident investigation",
+        "Escalate to Plant Manager if production is impacted"
+      ]
+    },
+    "CRITICAL": {
+      "response_time_sla": "Immediate response — do not wait; notify within 15 minutes",
+      "notify": ["OT Engineer On-Call", "Security Lead", "Plant Manager", "CERT-IN"],
+      "actions": [
+        "Immediately notify all contacts — do not delay",
+        "Convene emergency response team (physical or bridge call)",
+        "Consider controlled shutdown only after OT engineer assessment",
+        "Report to CERT-IN within 6 hours (mandatory under IT Act 2000)",
+        "Activate out-of-band communication channel for coordination",
+        "Preserve forensic evidence — do not reboot systems without approval",
+        "Initiate OT-specific incident response playbook",
+        "Document timeline of events for regulatory submission"
+      ]
+    }
+  },
+  "reporting_obligations": {
+    "cert_in": {
+      "authority": "CERT-IN (Indian Computer Emergency Response Team)",
+      "website": "https://www.cert-in.org.in",
+      "mandatory_for": "Critical information infrastructure incidents, ransomware, data breaches",
+      "deadline_hours": 6,
+      "legal_basis": "Information Technology Act 2000, Section 70B; CERT-In Directions April 2022"
+    },
+    "dsci": {
+      "authority": "DSCI (Data Security Council of India)",
+      "website": "https://www.dsci.in",
+      "mandatory_for": "Incidents involving personal data of Indian residents",
+      "deadline_hours": 72,
+      "legal_basis": "DPDP Act 2023 (Digital Personal Data Protection)"
+    }
   }
 }
+

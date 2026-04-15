@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Generated alert files (created by generate_scenario_alerts.py at runtime)
+data/alerts/*.json
+
+# SQLite database (runtime artifact)
+data/incidents.db
+
+# IDE / OS
+.idea/
+.vscode/
+*.DS_Store
+Thumbs.db
