@@ -4,6 +4,7 @@ import sqlite3
 import os
 from typing import Dict, List
 import json
+from datetime import datetime, timedelta
 
 
 class IncidentDatabase:
@@ -15,6 +16,7 @@ class IncidentDatabase:
         os.makedirs("data", exist_ok=True)
 
         self.init_db()
+        self._migrate()
 
     # --------------------------------------------------
 
@@ -37,12 +39,57 @@ class IncidentDatabase:
             shutdown_risk TEXT,
             warning TEXT,
             response_action TEXT,
+            response_steps TEXT,
             explanation TEXT,
+            risk_score_explanation TEXT,
+            correlation TEXT,
             do_steps TEXT,
-            dont_steps TEXT
-                       
+            dont_steps TEXT,
+            status TEXT DEFAULT 'open',
+            acknowledged_by TEXT,
+            acknowledged_at TEXT
         )
         """)
+
+        conn.commit()
+        conn.close()
+
+    # --------------------------------------------------
+    # MIGRATION — safely add new columns to existing databases
+    #
+    # Column names and types come from a hardcoded internal list, not external
+    # input.  We use an allowlist check as a defence-in-depth measure so that
+    # the f-string construction can never be reached with arbitrary strings.
+
+    _ALLOWED_MIGRATION_COLUMNS = {
+        "response_steps", "risk_score_explanation", "correlation",
+        "status", "acknowledged_by", "acknowledged_at",
+    }
+
+    def _migrate(self):
+
+        new_columns = [
+            ("response_steps", "TEXT"),
+            ("risk_score_explanation", "TEXT"),
+            ("correlation", "TEXT"),
+            ("status", "TEXT DEFAULT 'open'"),
+            ("acknowledged_by", "TEXT"),
+            ("acknowledged_at", "TEXT"),
+        ]
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("PRAGMA table_info(incidents)")
+        existing = {row[1] for row in cursor.fetchall()}
+
+        for col_name, col_type in new_columns:
+            if col_name not in self._ALLOWED_MIGRATION_COLUMNS:
+                raise ValueError(f"Unexpected migration column: {col_name!r}")
+            if col_name not in existing:
+                # col_name and col_type are validated against the allowlist above;
+                # SQLite does not support parameterised DDL statements.
+                cursor.execute(f"ALTER TABLE incidents ADD COLUMN {col_name} {col_type}")  # noqa: S608
 
         conn.commit()
         conn.close()
@@ -68,14 +115,16 @@ class IncidentDatabase:
             shutdown_risk,
             warning,
             response_action,
+            response_steps,
             explanation,
+            risk_score_explanation,
+            correlation,
             do_steps,
-            dont_steps
-            
+            dont_steps,
+            status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
-
             incident["id"],
             incident["timestamp"],
             incident["event_type"],
@@ -88,14 +137,13 @@ class IncidentDatabase:
             incident.get("shutdown_risk"),
             incident.get("warning"),
             incident.get("response_action"),
+            json.dumps(incident.get("response_steps", [])),
             incident.get("explanation"),
+            incident.get("risk_score_explanation"),
+            incident.get("correlation"),
             json.dumps(incident.get("do_steps", [])),
-            json.dumps(incident.get("dont_steps", []))
-
-
-            
-
-
+            json.dumps(incident.get("dont_steps", [])),
+            "open",
         ))
 
         conn.commit()
@@ -122,21 +170,25 @@ class IncidentDatabase:
             shutdown_risk,
             warning,
             response_action,
+            response_steps,
             explanation,
+            risk_score_explanation,
+            correlation,
             do_steps,
-            dont_steps               
+            dont_steps,
+            status,
+            acknowledged_by,
+            acknowledged_at
         FROM incidents
         ORDER BY timestamp DESC
         """)
 
         rows = cursor.fetchall()
-
         conn.close()
 
         incidents = []
 
         for r in rows:
-
             incidents.append({
                 "id": r[0],
                 "timestamp": r[1],
@@ -150,12 +202,99 @@ class IncidentDatabase:
                 "shutdown_risk": r[9],
                 "warning": r[10],
                 "response_action": r[11],
-                "explanation": r[12],
-                "do_steps": json.loads(r[13]) if r[13] else [],
-                "dont_steps": json.loads(r[14]) if r[14] else []
-                
-                
-
+                "response_steps": json.loads(r[12]) if r[12] else [],
+                "explanation": r[13],
+                "risk_score_explanation": r[14],
+                "correlation": r[15],
+                "do_steps": json.loads(r[16]) if r[16] else [],
+                "dont_steps": json.loads(r[17]) if r[17] else [],
+                "status": r[18] or "open",
+                "acknowledged_by": r[19],
+                "acknowledged_at": r[20],
             })
 
         return incidents
+
+    # --------------------------------------------------
+    # OPERATOR ACKNOWLEDGEMENT
+
+    def acknowledge_incident(self, incident_id: str, operator_name: str) -> bool:
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+        UPDATE incidents
+        SET status = 'acknowledged',
+            acknowledged_by = ?,
+            acknowledged_at = ?
+        WHERE id = ?
+        """, (operator_name, datetime.now().isoformat(), incident_id))
+
+        updated = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+
+        return updated
+
+    # --------------------------------------------------
+    # SHIFT HANDOVER SUMMARY
+
+    def get_shift_summary(self, since_iso: str = None) -> Dict:
+
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        if since_iso is None:
+            since_iso = (datetime.now() - timedelta(hours=8)).isoformat()
+
+        cursor.execute("""
+        SELECT
+            risk_level,
+            event_type,
+            asset_name,
+            status,
+            id,
+            timestamp
+        FROM incidents
+        WHERE timestamp >= ?
+        ORDER BY timestamp DESC
+        """, (since_iso,))
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        total = len(rows)
+        by_risk = {}
+        by_event = {}
+        by_asset = {}
+        open_count = 0
+        acknowledged_count = 0
+
+        for r in rows:
+            risk_level = r[0] or "UNKNOWN"
+            event_type = r[1] or "UNKNOWN"
+            asset_name = r[2] or "Unknown"
+            status = r[3] or "open"
+
+            by_risk[risk_level] = by_risk.get(risk_level, 0) + 1
+            by_event[event_type] = by_event.get(event_type, 0) + 1
+            by_asset[asset_name] = by_asset.get(asset_name, 0) + 1
+
+            if status == "acknowledged":
+                acknowledged_count += 1
+            else:
+                open_count += 1
+
+        return {
+            "since": since_iso,
+            "generated_at": datetime.now().isoformat(),
+            "total_incidents": total,
+            "open": open_count,
+            "acknowledged": acknowledged_count,
+            "by_risk_level": by_risk,
+            "by_event_type": by_event,
+            "most_affected_assets": dict(
+                sorted(by_asset.items(), key=lambda x: x[1], reverse=True)
+            ),
+        }

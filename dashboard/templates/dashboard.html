@@ -1,66 +1,239 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-
+<meta charset="UTF-8">
 <title>Portable IT-OT SOC Dashboard</title>
 
 <style>
 
+*{box-sizing:border-box}
+
 body{
-    font-family: Arial;
+    font-family:Arial,sans-serif;
     background:#0f172a;
-    color:white;
-    padding:30px;
+    color:#e2e8f0;
+    padding:24px;
+    margin:0;
 }
 
-h1{
-    color:#38bdf8;
+h1{color:#38bdf8;margin:0 0 4px}
+h2{color:#94a3b8;font-size:1rem;margin:0 0 16px;font-weight:normal}
+h3,h4{color:#cbd5e1}
+
+/* ---- Top bar ---- */
+.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:18px;
 }
 
-button{
-    padding:10px 20px;
-    margin:10px 5px;
-    font-size:16px;
-    cursor:pointer;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-    background:#1e293b;
-}
-
-th,td{
-    padding:10px;
-    border-bottom:1px solid #334155;
-    text-align:left;
-}
-
-th{
-    background:#334155;
-}
-
-tr:hover{
-    background:#475569;
-}
-
-.warning{
-    color:#facc15;
+.live-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    background:#134e4a;
+    color:#6ee7b7;
+    font-size:0.78rem;
+    padding:4px 10px;
+    border-radius:99px;
     font-weight:bold;
 }
 
-.low{color:#22c55e}
+.live-dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    background:#6ee7b7;
+    animation:pulse 1.4s infinite;
+}
+
+@keyframes pulse{
+    0%,100%{opacity:1}
+    50%{opacity:0.3}
+}
+
+/* ---- Stats bar ---- */
+.stats{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+}
+
+.stat{
+    background:#1e293b;
+    border-radius:8px;
+    padding:12px 20px;
+    min-width:120px;
+    text-align:center;
+}
+
+.stat .val{font-size:1.8rem;font-weight:bold;line-height:1}
+.stat .lbl{font-size:0.72rem;color:#94a3b8;margin-top:4px}
+
+/* ---- Buttons ---- */
+button{
+    padding:8px 16px;
+    margin:4px;
+    font-size:0.9rem;
+    cursor:pointer;
+    border:none;
+    border-radius:6px;
+    background:#334155;
+    color:#e2e8f0;
+    transition:background .15s;
+}
+button:hover{background:#475569}
+button.primary{background:#0369a1;color:#fff}
+button.primary:hover{background:#0284c7}
+button.success{background:#065f46;color:#6ee7b7}
+button.success:hover{background:#047857}
+button.danger{background:#7f1d1d;color:#fca5a5}
+
+/* ---- Table ---- */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#1e293b;
+    border-radius:8px;
+    overflow:hidden;
+    margin-top:6px;
+}
+
+th,td{padding:10px 12px;text-align:left;font-size:0.88rem}
+th{background:#334155;color:#94a3b8;font-weight:600;text-transform:uppercase;font-size:0.75rem;letter-spacing:.05em}
+tr:hover{background:#263348;cursor:pointer}
+td{border-bottom:1px solid #1e293b}
+
+/* ---- Colours ---- */
+.low   {color:#22c55e}
 .medium{color:#facc15}
-.high{color:#fb923c}
+.high  {color:#fb923c}
 .critical{color:#ef4444}
 
+.badge{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:99px;
+    font-size:0.72rem;
+    font-weight:bold;
+}
+.badge-open       {background:#1e3a5f;color:#60a5fa}
+.badge-acknowledged{background:#064e3b;color:#34d399}
+.badge-critical   {background:#450a0a;color:#ef4444}
+.badge-high       {background:#431407;color:#fb923c}
+.badge-medium     {background:#422006;color:#facc15}
+.badge-low        {background:#052e16;color:#22c55e}
+
+.warning{color:#facc15;font-weight:bold}
+
+/* ---- Panels ---- */
 .panel{
-    margin-top:30px;
+    margin-top:20px;
     background:#1e293b;
     padding:20px;
+    border-radius:8px;
 }
+
+.guidance-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin-top:12px;
+}
+
+@media(max-width:700px){.guidance-grid{grid-template-columns:1fr}}
+
+.box{background:#0f172a;border-radius:6px;padding:14px}
+.box h4{margin:0 0 8px;font-size:0.85rem;text-transform:uppercase;letter-spacing:.05em}
+.box.do h4{color:#34d399}
+.box.dont h4{color:#f87171}
+.box ul{margin:0;padding-left:18px;font-size:0.88rem;line-height:1.7}
+
+.risk-explain{
+    background:#172033;
+    border-left:3px solid #38bdf8;
+    padding:8px 12px;
+    font-size:0.82rem;
+    color:#94a3b8;
+    margin:10px 0;
+    border-radius:0 4px 4px 0;
+}
+
+.corr-badge{
+    display:inline-block;
+    background:#450a0a;
+    color:#fca5a5;
+    border-radius:4px;
+    padding:3px 10px;
+    font-size:0.8rem;
+    font-weight:bold;
+    margin:6px 0;
+}
+
+.ack-bar{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid #334155;
+}
+.ack-bar input{
+    flex:1;
+    padding:7px 10px;
+    border-radius:6px;
+    border:1px solid #334155;
+    background:#0f172a;
+    color:#e2e8f0;
+    font-size:0.88rem;
+}
+
+/* ---- Modal ---- */
+.modal-overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(0,0,0,0.7);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+    background:#1e293b;
+    border-radius:10px;
+    padding:28px;
+    max-width:600px;
+    width:90%;
+    max-height:80vh;
+    overflow-y:auto;
+}
+.modal h3{color:#38bdf8;margin:0 0 16px}
+.modal-close{float:right;cursor:pointer;color:#94a3b8;font-size:1.2rem;line-height:1}
+.report-row{
+    display:flex;
+    justify-content:space-between;
+    padding:6px 0;
+    border-bottom:1px solid #334155;
+    font-size:0.88rem;
+}
+.report-row:last-child{border:none}
+.report-section{margin:14px 0 6px;color:#38bdf8;font-size:0.8rem;font-weight:bold;text-transform:uppercase}
+
+/* ---- Escalation box ---- */
+.escalation{
+    background:#1a0f0f;
+    border:1px solid #7f1d1d;
+    border-radius:6px;
+    padding:12px 16px;
+    margin-top:12px;
+    font-size:0.85rem;
+}
+.escalation h4{color:#f87171;margin:0 0 6px}
+.escalation p{margin:4px 0;color:#fca5a5}
 
 </style>
 
@@ -68,55 +241,93 @@ tr:hover{
 
 <body>
 
-<h1>Portable IT-OT SOC Dashboard</h1>
-
-<button onclick="scanAlerts()">Scan Alerts</button>
-<button onclick="loadIncidents()">Refresh</button>
-
-<table>
-
-<thead>
-
-<tr>
-<th>ID</th>
-<th>Event</th>
-<th>Asset</th>
-<th>Severity</th>
-<th>Risk</th>
-<th>Criticality</th>
-<th>Warning</th>
-<th>Time</th>
-</tr>
-
-</thead>
-
-<tbody id="incidentTable"></tbody>
-
-</table>
-
-<div class="panel">
-
-<h2>Incident Response Guidance</h2>
-
-<div id="incidentDetails">
-Select an incident to view response guidance
+<div class="topbar">
+  <div>
+    <h1>Portable IT-OT SOC Dashboard</h1>
+    <h2>IT/OT Incident Response Tool v2</h2>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span class="live-badge"><span class="live-dot"></span> AUTO-SCAN ACTIVE</span>
+    <button onclick="loadIncidents()">⟳ Refresh</button>
+    <button onclick="openShiftReport()" class="primary">📋 Shift Report</button>
+  </div>
 </div>
 
+<!-- Stats bar -->
+<div class="stats" id="statsBar">
+  <div class="stat"><div class="val" id="statTotal">—</div><div class="lbl">Total</div></div>
+  <div class="stat"><div class="val critical" id="statCritical">—</div><div class="lbl">Critical</div></div>
+  <div class="stat"><div class="val high" id="statHigh">—</div><div class="lbl">High</div></div>
+  <div class="stat"><div class="val" id="statOpen">—</div><div class="lbl">Open</div></div>
+  <div class="stat"><div class="val" style="color:#34d399" id="statAck">—</div><div class="lbl">Acknowledged</div></div>
+</div>
+
+<!-- Incident table -->
+<table>
+<thead>
+<tr>
+  <th>ID</th>
+  <th>Event</th>
+  <th>Asset</th>
+  <th>Severity</th>
+  <th>Risk</th>
+  <th>Status</th>
+  <th>Warning</th>
+  <th>Time</th>
+</tr>
+</thead>
+<tbody id="incidentTable"></tbody>
+</table>
+
+<!-- Incident detail panel -->
+<div class="panel" id="detailPanel">
+  <h2 style="margin:0">Incident Response Guidance</h2>
+  <div id="incidentDetails" style="color:#94a3b8;margin-top:10px">
+    Select an incident row to view guidance
+  </div>
+</div>
+
+<!-- Shift Report Modal -->
+<div class="modal-overlay" id="shiftModal">
+  <div class="modal">
+    <span class="modal-close" onclick="closeShiftReport()">✕</span>
+    <h3>📋 Shift Handover Report</h3>
+    <div id="shiftReportContent">Loading…</div>
+  </div>
 </div>
 
 <script>
 
-let incidents=[]
+let incidents = []
+let escalation = {}
 
-async function scanAlerts(){
+// ---------------------------------------------------------------------------
+// HELPERS
+// ---------------------------------------------------------------------------
 
-    const res = await fetch('/api/scan')
-    const data = await res.json()
+/** Format an ISO timestamp to "YYYY-MM-DD HH:MM:SS" for display. */
+function fmtTs(ts){ return (ts||"").replace("T"," ").slice(0,19) }
 
-    alert("Processed "+data.count+" alerts")
 
-    loadIncidents()
+// ---------------------------------------------------------------------------
+// BOOTSTRAP
+// ---------------------------------------------------------------------------
+
+async function init(){
+    await loadEscalation()
+    await loadIncidents()
 }
+
+async function loadEscalation(){
+    try{
+        const res = await fetch('/api/config/escalation')
+        if(res.ok) escalation = await res.json()
+    }catch(e){}
+}
+
+// ---------------------------------------------------------------------------
+// INCIDENT LIST
+// ---------------------------------------------------------------------------
 
 async function loadIncidents(){
 
@@ -124,87 +335,242 @@ async function loadIncidents(){
     incidents = await res.json()
 
     const table = document.getElementById("incidentTable")
+    table.innerHTML = ""
 
-    table.innerHTML=""
+    let total=0, critical=0, high=0, open=0, ack=0
 
-    incidents.forEach((i,index)=>{
+    incidents.forEach((i, index) => {
+
+        total++
+        if(i.risk_level === "CRITICAL") critical++
+        if(i.risk_level === "HIGH") high++
+        if(i.status === "open") open++
+        else ack++
+
+        const rl = (i.risk_level || "").toLowerCase()
+        const sv = (i.severity || "").toLowerCase()
+        const statusBadge = i.status === "acknowledged"
+            ? `<span class="badge badge-acknowledged">✓ ACK</span>`
+            : `<span class="badge badge-open">OPEN</span>`
 
         table.innerHTML += `
         <tr onclick="showIncident(${index})">
-
-        <td>${i.id}</td>
-        <td>${i.event_type}</td>
-        <td>${i.asset_name}</td>
-        <td class="${i.severity}">${i.severity}</td>
-        <td class="${i.risk_level.toLowerCase()}">${i.risk_level}</td>
-        <td>${i.criticality}</td>
-        <td class="warning">${i.warning || ""}</td>
-        <td>${i.timestamp}</td>
-
-        </tr>
-        `
+          <td style="font-family:monospace;font-size:0.82rem">${i.id}</td>
+          <td>${i.event_type || "—"}</td>
+          <td>${i.asset_name || i.asset_id || "—"}</td>
+          <td class="${sv}">${i.severity || "—"}</td>
+          <td><span class="badge badge-${rl}">${i.risk_level || "—"}</span></td>
+          <td>${statusBadge}</td>
+          <td class="warning">${i.warning ? "⚠ " + i.warning : ""}</td>
+          <td style="font-size:0.78rem;color:#64748b">${fmtTs(i.timestamp)}</td>
+        </tr>`
     })
+
+    document.getElementById("statTotal").textContent = total
+    document.getElementById("statCritical").textContent = critical
+    document.getElementById("statHigh").textContent = high
+    document.getElementById("statOpen").textContent = open
+    document.getElementById("statAck").textContent = ack
 }
+
+// ---------------------------------------------------------------------------
+// INCIDENT DETAIL
+// ---------------------------------------------------------------------------
 
 function showIncident(index){
 
     const i = incidents[index]
 
-    let steps=""
-    let doList=""
-    let dontList=""
+    let steps = i.response_steps
+        ? i.response_steps.map(s => `<li>${s}</li>`).join("")
+        : ""
 
-    if(i.response_steps){
-        i.response_steps.forEach(step=>{
-            steps += "<li>"+step+"</li>"
-        })
+    let doList = i.do_steps
+        ? i.do_steps.map(s => `<li>${s}</li>`).join("")
+        : ""
+
+    let dontList = i.dont_steps
+        ? i.dont_steps.map(s => `<li>${s}</li>`).join("")
+        : ""
+
+    const statusBadge = i.status === "acknowledged"
+        ? `<span class="badge badge-acknowledged">✓ Acknowledged by ${i.acknowledged_by} at ${fmtTs(i.acknowledged_at)}</span>`
+        : `<span class="badge badge-open">OPEN — not yet acknowledged</span>`
+
+    const corrHtml = i.correlation
+        ? `<div class="corr-badge">⚡ Correlated Pattern: ${i.correlation}</div>`
+        : ""
+
+    const riskExplainHtml = i.risk_score_explanation
+        ? `<div class="risk-explain">🔢 ${i.risk_score_explanation}</div>`
+        : ""
+
+    // Escalation guidance
+    let escalationHtml = ""
+    if(escalation.thresholds){
+        const action = escalation.thresholds[i.risk_level] || ""
+        const contacts = (escalation.contacts || [])
+            .map(c => `<p>📞 <b>${c.role}:</b> ${c.name} — ${c.phone}</p>`)
+            .join("")
+        if(action){
+            escalationHtml = `
+            <div class="escalation">
+                <h4>Escalation Guidance</h4>
+                <p>${action}</p>
+                ${contacts}
+            </div>`
+        }
     }
 
-    if(i.do_steps){
-        i.do_steps.forEach(step=>{
-            doList += "<li>"+step+"</li>"
-        })
-    }
-
-    if(i.dont_steps){
-        i.dont_steps.forEach(step=>{
-            dontList += "<li>"+step+"</li>"
-        })
-    }
+    const ackSection = i.status === "open" ? `
+    <div class="ack-bar">
+        <input type="text" id="operatorName_${i.id}" placeholder="Your name (required to acknowledge)">
+        <button class="success" onclick="acknowledge('${i.id}')">✓ Acknowledge Incident</button>
+    </div>` : `<div style="margin-top:14px;font-size:0.85rem;color:#34d399">
+        ✓ Acknowledged by <b>${i.acknowledged_by}</b> at ${fmtTs(i.acknowledged_at)}
+    </div>`
 
     document.getElementById("incidentDetails").innerHTML = `
-    <h3>${i.id}</h3>
 
-    <p><b>Event:</b> ${i.event_type}</p>
-    <p><b>Asset:</b> ${i.asset_name}</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <h3 style="margin:0;font-family:monospace">${i.id}</h3>
+        ${statusBadge}
+    </div>
 
-    <p><b>Operational Risk Level:</b> ${i.risk_level}</p>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:0.88rem;margin-bottom:10px">
+        <span><b>Event:</b> ${i.event_type}</span>
+        <span><b>Asset:</b> ${i.asset_name}</span>
+        <span><b>Severity:</b> <span class="${(i.severity||"").toLowerCase()}">${i.severity}</span></span>
+        <span><b>Risk:</b> <span class="${(i.risk_level||"").toLowerCase()}">${i.risk_level}</span></span>
+        <span><b>OT Criticality:</b> ${i.criticality}</span>
+    </div>
 
-    <p><b>OT Criticality:</b> ${i.criticality}</p>
+    ${corrHtml}
+    ${i.warning ? `<p class="warning">⚠ ${i.warning}</p>` : ""}
+    ${riskExplainHtml}
 
-    <p class="warning">${i.warning || ""}</p>
+    <hr style="border-color:#334155;margin:14px 0">
 
-    <hr>
+    <h4>What is happening</h4>
+    <p style="font-size:0.9rem">${i.explanation || "No explanation available"}</p>
 
-    <h4> What is happening</h4>
-    <p>${i.explanation || "No explanation available"}</p>
+    <div class="guidance-grid">
+        <div class="box dont">
+            <h4>⛔ What NOT to do</h4>
+            <ul>${dontList || "<li>No specific restrictions — use judgment</li>"}</ul>
+        </div>
+        <div class="box do">
+            <h4>✅ What to do</h4>
+            <ul>${doList}</ul>
+        </div>
+    </div>
 
-    <h4>!! What NOT to do</h4>
-    <ul>${dontList || "<li>No restrictions</li>"}</ul>
+    <h4 style="margin-top:16px">⟹ Recommended Response: ${i.response_action}</h4>
+    <ol style="font-size:0.88rem;line-height:1.8">${steps}</ol>
 
-    <h4>!! What to do</h4>
-    <ul>${doList}</ul>
-
-    <h4>=> Recommended Response</h4>
-    <p>${i.response_action}</p>
-
-    <ul>${steps}</ul>
+    ${escalationHtml}
+    ${ackSection}
     `
 }
 
-loadIncidents()
+// ---------------------------------------------------------------------------
+// ACKNOWLEDGE
+// ---------------------------------------------------------------------------
 
-setInterval(loadIncidents,5000)
+async function acknowledge(incidentId){
+
+    const input = document.getElementById("operatorName_" + incidentId)
+    const operator = (input ? input.value : "").trim()
+
+    if(!operator){
+        input.style.borderColor = "#ef4444"
+        input.placeholder = "Name is required!"
+        return
+    }
+
+    const res = await fetch(`/api/incidents/${incidentId}/acknowledge`, {
+        method: "PUT",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({operator})
+    })
+
+    if(res.ok){
+        await loadIncidents()
+        // Re-render the detail panel with updated data
+        const idx = incidents.findIndex(x => x.id === incidentId)
+        if(idx >= 0) showIncident(idx)
+    }else{
+        const err = await res.json()
+        alert("Error: " + (err.error || "Unknown error"))
+    }
+}
+
+// ---------------------------------------------------------------------------
+// SHIFT REPORT MODAL
+// ---------------------------------------------------------------------------
+
+async function openShiftReport(){
+
+    document.getElementById("shiftModal").classList.add("open")
+    document.getElementById("shiftReportContent").innerHTML = "Loading…"
+
+    const res = await fetch('/api/report/shift')
+    const data = await res.json()
+
+    const riskOrder = ["CRITICAL","HIGH","MEDIUM","LOW","UNKNOWN"]
+
+    const byRisk = riskOrder
+        .filter(k => data.by_risk_level[k])
+        .map(k => `<div class="report-row">
+            <span class="badge badge-${k.toLowerCase()}">${k}</span>
+            <b>${data.by_risk_level[k]}</b>
+        </div>`).join("")
+
+    const byEvent = Object.entries(data.by_event_type || {})
+        .sort((a,b)=>b[1]-a[1])
+        .map(([k,v])=>`<div class="report-row"><span>${k}</span><b>${v}</b></div>`)
+        .join("")
+
+    const byAsset = Object.entries(data.most_affected_assets || {})
+        .map(([k,v])=>`<div class="report-row"><span>${k}</span><b>${v}</b></div>`)
+        .join("")
+
+    document.getElementById("shiftReportContent").innerHTML = `
+
+    <div class="report-row" style="font-size:0.8rem;color:#64748b">
+        <span>Period</span><span>${fmtTs(data.since)} → now</span>
+    </div>
+
+    <div class="report-section">Overview</div>
+    <div class="report-row"><span>Total incidents</span><b>${data.total_incidents}</b></div>
+    <div class="report-row"><span>Open</span><b style="color:#60a5fa">${data.open}</b></div>
+    <div class="report-row"><span>Acknowledged</span><b style="color:#34d399">${data.acknowledged}</b></div>
+
+    <div class="report-section">By Risk Level</div>
+    ${byRisk || "<div style='color:#64748b;font-size:.85rem'>No incidents</div>"}
+
+    <div class="report-section">By Event Type</div>
+    ${byEvent || "<div style='color:#64748b;font-size:.85rem'>No incidents</div>"}
+
+    <div class="report-section">Most Affected Assets</div>
+    ${byAsset || "<div style='color:#64748b;font-size:.85rem'>No incidents</div>"}
+
+    <div style="margin-top:16px;font-size:0.75rem;color:#64748b">
+        Generated: ${fmtTs(data.generated_at)}
+    </div>
+    `
+}
+
+function closeShiftReport(){
+    document.getElementById("shiftModal").classList.remove("open")
+}
+
+// ---------------------------------------------------------------------------
+// AUTO-REFRESH
+// ---------------------------------------------------------------------------
+
+init()
+setInterval(loadIncidents, 5000)
 
 </script>
 
