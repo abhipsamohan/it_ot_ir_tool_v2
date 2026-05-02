@@ -1,52 +1,42 @@
-# IT/OT Incident Response Tool
+# Current Status Documentation
 
-## Overview  
-The IT/OT Incident Response Tool is designed to assist organizations in managing and responding to incidents within their Information Technology (IT) and Operational Technology (OT) environments. This tool simplifies the processes of identifying, analyzing, and mitigating incidents, ensuring faster recovery and reduced downtime.
+## System Overview
+This system is designed to facilitate complex operations and processes seamlessly. It employs a modular architecture, allowing for easy integration and scalability of various components.
 
-## Features  
-- **Incident Tracking**: Keep a log of all incidents, including descriptions, severity, impacted systems, and resolution status.
-- **Integration capabilities**: Seamlessly connect with existing IT and OT monitoring systems to receive alerts and data.
-- **Automated Response**: Implement predefined response actions to incidents based on their classification and severity.
-- **Reporting and Analytics**: Generate reports on incident trends, response times, and system performance metrics.
-- **User Management**: Role-based access to ensure that users have access to relevant data and functionalities.
+## Key Components
+1. **Core Engine**: The heart of the system that handles the primary processing tasks and ensures the operations run smoothly.
+2. **User Interface**: A responsive and intuitive interface that allows users to interact with the system effortlessly. It is built with accessibility in mind, ensuring usability across various devices.
+3. **Data Management Module**: This module is responsible for managing data input, storage, and retrieval, ensuring data integrity and security throughout the process.
+4. **Integration Layer**: Facilitates communication between the system and external services or APIs, ensuring seamless data exchange and functionality.
+5. **Logging and Monitoring**: An integrated system that captures critical logs and monitors the system’s performance and health, providing insights into usage patterns and potential issues.
 
-## Architecture  
-The tool is built on a microservices architecture, allowing for scalable and independent deployment of various components. The main components include:
-- **Frontend**: A user-friendly interface for incident reporting and management.
-- **Backend**: Handles data storage, processing, and communication between the frontend and other services.
-- **Database**: Stores all incident data, user accounts, and configuration settings.
-- **Integration Services**: Connects with IT/OT systems to receive data and send alerts.
+## Features
+- **Modular Design**: Each component can be developed, tested, and deployed independently, promoting agility within the development cycle.
+- **User Authentication**: Secure user authentication mechanisms to ensure that sensitive operations are protected against unauthorized access.
+- **Customizable Settings**: Users can configure settings to tailor the system's behavior according to their specific needs.
+- **Reporting and Analytics**: In-built tools to generate reports and analyze data for informed decision-making.
+- **Real-time Notifications**: Users receive timely notifications regarding system updates, processes, and alerts.
 
-## Setup Instructions  
-1. **Prerequisites**: Ensure you have the following installed:
-   - Node.js (version >= 14)
-   - MongoDB (for database storage)
-   - Docker (optional, for containerized deployment)
-
-2. **Clone the repository**:  
+## Setup Instructions
+1. **Clone the Repository**:
    ```bash
    git clone https://github.com/abhipsamohan/it_ot_ir_tool_v2.git
    cd it_ot_ir_tool_v2
    ```
-
-3. **Install dependencies**:  
+2. **Install Dependencies**:
+   Ensure you have the necessary dependencies installed. You can do this by running:
    ```bash
    npm install
    ```
-
-4. **Configure environment variables**: Create a `.env` file in the root directory and set the necessary configuration values.
-
-5. **Start the application**:  
+3. **Configuration**:
+   Update the configuration files located in the `config` directory to suit your operational environment.
+4. **Run the Application**:
+   Start the application using the following command:
    ```bash
    npm start
    ```
+5. **Access the User Interface**:
+   Open your web browser and navigate to `http://localhost:3000` to access the user interface.
 
-## Usage Guide  
-1. Access the tool through your web browser by navigating to `http://localhost:3000`.
-2. Use the login screen to access your account (default credentials: admin/admin).
-3. Begin reporting incidents by filling out the incident report form, detailing the incident type and severity.
-4. Monitor ongoing incidents through the incident dashboard.
-5. Utilize the reporting tool to generate incident analysis reports.
-
-## Conclusion  
-This tool aims to streamline the incident response process, improving both IT and OT operational resilience. For further details and support, refer to the [documentation](link_to_full_documentation) or contact the support team.
+## Conclusion
+This documentation aims to provide a comprehensive understanding of the current status and operational framework of the system, ensuring a smooth onboarding experience for new users and developers alike.
