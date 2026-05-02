@@ -378,6 +378,8 @@ class DecisionEngine:
             "system": "Unknown Asset",
             "criticality": "medium",
             "shutdown_risk": "unknown",
+            "zone_id": "unknown",
+            "purdue_level": "unknown",
         })
 
         risk = self.calculate_risk(alert, asset)
@@ -424,6 +426,8 @@ class DecisionEngine:
 
             "criticality": asset.get("criticality"),
             "shutdown_risk": asset.get("shutdown_risk"),
+            "zone_id": asset.get("zone_id", "unknown"),
+            "purdue_level": asset.get("purdue_level", "unknown"),
 
             "response_action": response["action"],
             "response_steps": response["steps"],
