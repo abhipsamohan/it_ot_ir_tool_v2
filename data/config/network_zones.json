@@ -1,0 +1,52 @@
+{
+  "zones": [
+    {
+      "zone_id": "enterprise_it",
+      "name": "Enterprise IT",
+      "purdue_level": "L4-L5",
+      "description": "Corporate and business systems (ERP, email, internet-facing services)"
+    },
+    {
+      "zone_id": "ot_dmz",
+      "name": "OT DMZ",
+      "purdue_level": "L3.5",
+      "description": "Boundary services between IT and OT (jump hosts, historians, boundary monitoring)"
+    },
+    {
+      "zone_id": "ot_operations",
+      "name": "OT Operations",
+      "purdue_level": "L2-L3",
+      "description": "Supervisory operations including SCADA/HMI and site-level OT visibility"
+    },
+    {
+      "zone_id": "ot_control",
+      "name": "OT Control",
+      "purdue_level": "L1",
+      "description": "Basic control systems such as PLCs and industrial controllers"
+    },
+    {
+      "zone_id": "physical_process",
+      "name": "Physical Process",
+      "purdue_level": "L0",
+      "description": "Physical process components such as sensors and actuators"
+    }
+  ],
+  "network_segment_mapping": {
+    "CRITICAL": {
+      "zone_id": "ot_control",
+      "purdue_level": "L1"
+    },
+    "OT_SEGMENT_1": {
+      "zone_id": "ot_control",
+      "purdue_level": "L1"
+    },
+    "OT_SEGMENT_2": {
+      "zone_id": "ot_operations",
+      "purdue_level": "L2-L3"
+    },
+    "DMZ": {
+      "zone_id": "ot_dmz",
+      "purdue_level": "L3.5"
+    }
+  }
+}

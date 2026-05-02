@@ -227,6 +227,23 @@ dashboard for operator reference during active incidents.
 
 ## 8. Integration Points (Future Enhancement)
 
+## Purdue / PERA Alignment
+
+This tool follows a Purdue-inspired deployment model for industrial environments.
+
+- **L4-L5 (Enterprise IT):** upstream business/IT monitoring systems may forward alerts
+- **L3.5 (OT DMZ):** preferred placement for this middleware as a boundary analysis layer
+- **L2-L3 (OT Operations):** supervisory OT context and event sources
+- **L1-L0 (Control/Physical):** protected process layers represented through asset metadata
+
+The implementation is intentionally **human-in-the-loop**:
+- The middleware correlates events, scores risk, and provides recommendations.
+- It does **not** send direct control commands to PLCs/actuators.
+
+Zone metadata is captured in:
+- `data/ot_context/ot_assets.json` (`zone_id`, `purdue_level`)
+- `data/config/network_zones.json` (zone catalog and segment mapping)
+
 ### 8.1 SIEM Integration (Inbound)
 
 Real SIEM/IDS alerts can be forwarded to the middleware via:

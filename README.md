@@ -191,3 +191,17 @@ curl -X POST http://127.0.0.1:5000/api/alert \
 ## Documentation
 - Architecture: `docs/ARCHITECTURE.md`
 - Format adapters + examples: `docs/FORMAT_ADAPTERS.md`
+
+## Purdue / PERA Alignment
+
+This middleware is designed to run as a **boundary monitoring and decision-support
+service** between enterprise IT and OT operations, aligned with Purdue/ PERA
+segmentation concepts.
+
+- Typical placement: **Level 3.5 (OT DMZ)** or adjacent **Level 4 operations**
+- Ingests alerts from multiple zones and formats
+- Provides **guidance only** (no direct PLC/actuator control commands)
+- Preserves OT safety by requiring operator/engineer coordination for risky actions
+
+To make zoning explicit in incidents, assets include `zone_id` and `purdue_level`
+metadata and a reference map is maintained in `data/config/network_zones.json`.

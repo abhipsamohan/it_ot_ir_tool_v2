@@ -37,6 +37,8 @@ class IncidentDatabase:
             risk_score REAL,
             criticality TEXT,
             shutdown_risk TEXT,
+            zone_id TEXT,
+            purdue_level TEXT,
             warning TEXT,
             response_action TEXT,
             response_steps TEXT,
@@ -64,6 +66,7 @@ class IncidentDatabase:
     _ALLOWED_MIGRATION_COLUMNS = {
         "response_steps", "risk_score_explanation", "correlation",
         "status", "acknowledged_by", "acknowledged_at",
+        "zone_id", "purdue_level",
     }
 
     def _migrate(self):
@@ -75,6 +78,8 @@ class IncidentDatabase:
             ("status", "TEXT DEFAULT 'open'"),
             ("acknowledged_by", "TEXT"),
             ("acknowledged_at", "TEXT"),
+            ("zone_id", "TEXT"),
+            ("purdue_level", "TEXT"),
         ]
 
         conn = sqlite3.connect(self.db_path)
@@ -113,6 +118,8 @@ class IncidentDatabase:
             risk_score,
             criticality,
             shutdown_risk,
+            zone_id,
+            purdue_level,
             warning,
             response_action,
             response_steps,
@@ -123,18 +130,20 @@ class IncidentDatabase:
             dont_steps,
             status
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             incident["id"],
             incident["timestamp"],
-            incident["event_type"],
-            incident["asset_id"],
-            incident["asset_name"],
-            incident["severity"],
-            incident["risk_level"],
-            incident["risk_score"],
+            incident.get("event_type"),
+            incident.get("asset_id", "unknown"),
+            incident.get("asset_name", "Unknown Asset"),
+            incident.get("severity", "medium"),
+            incident.get("risk_level", "MEDIUM"),
+            incident.get("risk_score", 0.0),
             incident.get("criticality"),
             incident.get("shutdown_risk"),
+            incident.get("zone_id"),
+            incident.get("purdue_level"),
             incident.get("warning"),
             incident.get("response_action"),
             json.dumps(incident.get("response_steps", [])),
@@ -168,6 +177,8 @@ class IncidentDatabase:
             risk_score,
             criticality,
             shutdown_risk,
+            zone_id,
+            purdue_level,
             warning,
             response_action,
             response_steps,
@@ -200,17 +211,19 @@ class IncidentDatabase:
                 "risk_score": r[7],
                 "criticality": r[8],
                 "shutdown_risk": r[9],
-                "warning": r[10],
-                "response_action": r[11],
-                "response_steps": json.loads(r[12]) if r[12] else [],
-                "explanation": r[13],
-                "risk_score_explanation": r[14],
-                "correlation": r[15],
-                "do_steps": json.loads(r[16]) if r[16] else [],
-                "dont_steps": json.loads(r[17]) if r[17] else [],
-                "status": r[18] or "open",
-                "acknowledged_by": r[19],
-                "acknowledged_at": r[20],
+                "zone_id": r[10],
+                "purdue_level": r[11],
+                "warning": r[12],
+                "response_action": r[13],
+                "response_steps": json.loads(r[14]) if r[14] else [],
+                "explanation": r[15],
+                "risk_score_explanation": r[16],
+                "correlation": r[17],
+                "do_steps": json.loads(r[18]) if r[18] else [],
+                "dont_steps": json.loads(r[19]) if r[19] else [],
+                "status": r[20] or "open",
+                "acknowledged_by": r[21],
+                "acknowledged_at": r[22],
             })
 
         return incidents
