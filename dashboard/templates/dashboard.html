@@ -407,17 +407,29 @@ function showIncident(index){
 
     // Escalation guidance
     let escalationHtml = ""
-    if(escalation.thresholds){
-        const action = escalation.thresholds[i.risk_level] || ""
-        const contacts = (escalation.contacts || [])
-            .map(c => `<p>📞 <b>${c.role}:</b> ${c.name} — ${c.phone}</p>`)
+    const rules = escalation.escalation_rules || escalation.thresholds || {}
+    if(rules && i.risk_level){
+        const rule = rules[i.risk_level] || null
+        const contactsByRole = new Map((escalation.contacts || []).map(c => [c.role, c]))
+        const notifyList = (rule && rule.notify ? rule.notify : [])
+            .map(role => {
+                const c = contactsByRole.get(role)
+                return c
+                    ? `<p>📞 <b>${c.role}:</b> ${c.name} — ${c.phone}</p>`
+                    : `<p>📞 <b>${role}</b></p>`
+            })
             .join("")
-        if(action){
+        const actions = (rule && rule.actions ? rule.actions : [])
+            .map(a => `<li>${a}</li>`)
+            .join("")
+
+        if(rule){
             escalationHtml = `
             <div class="escalation">
                 <h4>Escalation Guidance</h4>
-                <p>${action}</p>
-                ${contacts}
+                ${rule.response_time_sla ? `<p><b>SLA:</b> ${rule.response_time_sla}</p>` : ""}
+                ${actions ? `<ol>${actions}</ol>` : ""}
+                ${notifyList}
             </div>`
         }
     }
