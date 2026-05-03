@@ -405,32 +405,52 @@ function showIncident(index){
         ? `<div class="risk-explain">🔢 ${i.risk_score_explanation}</div>`
         : ""
 
-    // Escalation guidance
+    // Escalation guidance (risk-aware verbosity)
     let escalationHtml = ""
     const rules = escalation.escalation_rules || escalation.thresholds || {}
-    if(rules && i.risk_level){
+    if (rules && i.risk_level) {
         const rule = rules[i.risk_level] || null
         const contactsByRole = new Map((escalation.contacts || []).map(c => [c.role, c]))
-        const notifyList = (rule && rule.notify ? rule.notify : [])
-            .map(role => {
+
+        if (rule) {
+            const level = (i.risk_level || "").toUpperCase()
+            const notifyRoles = rule.notify || []
+            const actionsRaw = rule.actions || []
+
+            const renderContacts = (roles) => roles.map(role => {
                 const c = contactsByRole.get(role)
                 return c
                     ? `<p>📞 <b>${c.role}:</b> ${c.name} — ${c.phone}</p>`
                     : `<p>📞 <b>${role}</b></p>`
-            })
-            .join("")
-        const actions = (rule && rule.actions ? rule.actions : [])
-            .map(a => `<li>${a}</li>`)
-            .join("")
+            }).join("")
 
-        if(rule){
-            escalationHtml = `
-            <div class="escalation">
-                <h4>Escalation Guidance</h4>
-                ${rule.response_time_sla ? `<p><b>SLA:</b> ${rule.response_time_sla}</p>` : ""}
-                ${actions ? `<ol>${actions}</ol>` : ""}
-                ${notifyList}
-            </div>`
+            const renderActions = (acts) => acts.map(a => `<li>${a}</li>`).join("")
+
+            if (level === "LOW") {
+                escalationHtml = `
+                <div class="escalation" style="opacity:0.9">
+                    <h4>Escalation Guidance</h4>
+                    <p>Low-risk incident: no immediate escalation required. Monitor and review in shift handover.</p>
+                </div>`
+            } else if (level === "MEDIUM") {
+                const compactActions = actionsRaw.slice(0, 1)
+                const compactRoles = notifyRoles.slice(0, 1)
+                escalationHtml = `
+                <div class="escalation">
+                    <h4>Escalation Guidance (Medium)</h4>
+                    ${rule.response_time_sla ? `<p><b>SLA:</b> ${rule.response_time_sla}</p>` : ""}
+                    ${compactActions.length ? `<ol>${renderActions(compactActions)}</ol>` : ""}
+                    ${renderContacts(compactRoles)}
+                </div>`
+            } else {
+                escalationHtml = `
+                <div class="escalation">
+                    <h4>Escalation Guidance</h4>
+                    ${rule.response_time_sla ? `<p><b>SLA:</b> ${rule.response_time_sla}</p>` : ""}
+                    ${actionsRaw.length ? `<ol>${renderActions(actionsRaw)}</ol>` : ""}
+                    ${renderContacts(notifyRoles)}
+                </div>`
+            }
         }
     }
 
