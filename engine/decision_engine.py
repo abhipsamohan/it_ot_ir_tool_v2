@@ -60,9 +60,11 @@ class DecisionEngine:
 
         self.alerts_dir = "data/alerts"
         self.context_file = "data/ot_context/ot_assets.json"
+        self.zones_file = "data/config/network_zones.json"
 
         self.db = IncidentDatabase()
         self.assets = self.load_assets()
+        self.network_segment_mapping = self.load_network_segment_mapping()
 
         self.processed_files = set()
         # Each entry: {"event_type": str, "asset_id": str, "received_at": datetime}
@@ -82,7 +84,43 @@ class DecisionEngine:
         """Reload OT asset context from disk without restarting the engine."""
 
         self.assets = self.load_assets()
+        self.network_segment_mapping = self.load_network_segment_mapping()
         return self.assets
+
+    def load_network_segment_mapping(self) -> Dict:
+        """Load network_segment -> zone/purdue mapping from config."""
+        if not os.path.exists(self.zones_file):
+            return {}
+        try:
+            with open(self.zones_file) as f:
+                data = json.load(f)
+            return data.get("network_segment_mapping", {})
+        except Exception:
+            return {}
+
+    def _resolve_asset_zone(self, asset: Dict) -> Dict:
+        """
+        Resolve zone metadata from mapping with asset values as override.
+        Prints warning if explicit asset zone values conflict with mapping.
+        """
+        segment = asset.get("network_segment")
+        mapped = self.network_segment_mapping.get(segment, {})
+
+        mapped_zone = mapped.get("zone_id")
+        mapped_level = mapped.get("purdue_level")
+
+        asset_zone = asset.get("zone_id")
+        asset_level = asset.get("purdue_level")
+
+        if mapped_zone and asset_zone and mapped_zone != asset_zone:
+            print(f"[engine] Warning: zone mismatch for segment '{segment}': mapped={mapped_zone} asset={asset_zone}")
+        if mapped_level and asset_level and mapped_level != asset_level:
+            print(f"[engine] Warning: level mismatch for segment '{segment}': mapped={mapped_level} asset={asset_level}")
+
+        return {
+            "zone_id": asset_zone or mapped_zone or "unknown",
+            "purdue_level": asset_level or mapped_level or "unknown",
+        }
 
     # --------------------------------------------------
     # RISK SCORING
@@ -378,6 +416,8 @@ class DecisionEngine:
             "system": "Unknown Asset",
             "criticality": "medium",
             "shutdown_risk": "unknown",
+            "zone_id": "unknown",
+            "purdue_level": "unknown",
         })
 
         risk = self.calculate_risk(alert, asset)
@@ -407,6 +447,8 @@ class DecisionEngine:
         if correlation:
             warning = f"!! Correlated attack pattern: {correlation['type']}"
 
+        zone_meta = self._resolve_asset_zone(asset)
+
         return {
             "id": f"INC-{uuid.uuid4().hex[:8].upper()}",
             "timestamp": datetime.now().isoformat(),
@@ -424,6 +466,8 @@ class DecisionEngine:
 
             "criticality": asset.get("criticality"),
             "shutdown_risk": asset.get("shutdown_risk"),
+            "zone_id": zone_meta["zone_id"],
+            "purdue_level": zone_meta["purdue_level"],
 
             "response_action": response["action"],
             "response_steps": response["steps"],
