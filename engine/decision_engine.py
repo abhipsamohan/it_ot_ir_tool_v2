@@ -60,9 +60,15 @@ class DecisionEngine:
 
         self.alerts_dir = "data/alerts"
         self.context_file = "data/ot_context/ot_assets.json"
+        self.zones_file = "data/config/network_zones.json"
+        self.correlation_file = "data/config/correlation_rules.json"
+        self.risk_model_file = "data/config/risk_model.json"
 
         self.db = IncidentDatabase()
         self.assets = self.load_assets()
+        self.network_segment_mapping = self.load_network_segment_mapping()
+        self.correlation_patterns = self.load_correlation_patterns()
+        self.risk_model = self.load_risk_model()
 
         self.processed_files = set()
         # Each entry: {"event_type": str, "asset_id": str, "received_at": datetime}
@@ -82,7 +88,72 @@ class DecisionEngine:
         """Reload OT asset context from disk without restarting the engine."""
 
         self.assets = self.load_assets()
+        self.network_segment_mapping = self.load_network_segment_mapping()
+        self.correlation_patterns = self.load_correlation_patterns()
+        self.risk_model = self.load_risk_model()
         return self.assets
+
+    def load_correlation_patterns(self) -> List[Dict]:
+        if not os.path.exists(self.correlation_file):
+            return CORRELATION_PATTERNS
+        try:
+            with open(self.correlation_file) as f:
+                data = json.load(f)
+            return data if isinstance(data, list) and data else CORRELATION_PATTERNS
+        except Exception:
+            return CORRELATION_PATTERNS
+
+    def load_risk_model(self) -> Dict:
+        default = {
+            "weights": {"severity": 0.6, "criticality": 0.4},
+            "thresholds": {"CRITICAL": 3.5, "HIGH": 2.5, "MEDIUM": 1.5},
+        }
+        if not os.path.exists(self.risk_model_file):
+            return default
+        try:
+            with open(self.risk_model_file) as f:
+                data = json.load(f)
+            return {
+                "weights": data.get("weights", default["weights"]),
+                "thresholds": data.get("thresholds", default["thresholds"]),
+            }
+        except Exception:
+            return default
+
+    def load_network_segment_mapping(self) -> Dict:
+        """Load network_segment -> zone/purdue mapping from config."""
+        if not os.path.exists(self.zones_file):
+            return {}
+        try:
+            with open(self.zones_file) as f:
+                data = json.load(f)
+            return data.get("network_segment_mapping", {})
+        except Exception:
+            return {}
+
+    def _resolve_asset_zone(self, asset: Dict) -> Dict:
+        """
+        Resolve zone metadata from mapping with asset values as override.
+        Prints warning if explicit asset zone values conflict with mapping.
+        """
+        segment = asset.get("network_segment")
+        mapped = self.network_segment_mapping.get(segment, {})
+
+        mapped_zone = mapped.get("zone_id")
+        mapped_level = mapped.get("purdue_level")
+
+        asset_zone = asset.get("zone_id")
+        asset_level = asset.get("purdue_level")
+
+        if mapped_zone and asset_zone and mapped_zone != asset_zone:
+            print(f"[engine] Warning: zone mismatch for segment '{segment}': mapped={mapped_zone} asset={asset_zone}")
+        if mapped_level and asset_level and mapped_level != asset_level:
+            print(f"[engine] Warning: level mismatch for segment '{segment}': mapped={mapped_level} asset={asset_level}")
+
+        return {
+            "zone_id": asset_zone or mapped_zone or "unknown",
+            "purdue_level": asset_level or mapped_level or "unknown",
+        }
 
     # --------------------------------------------------
     # RISK SCORING
@@ -95,13 +166,20 @@ class DecisionEngine:
         severity_val = severity_map.get(alert.get("severity", "medium"), 2)
         criticality_val = criticality_map.get(asset.get("criticality", "medium"), 2)
 
-        score = round((severity_val * 0.6) + (criticality_val * 0.4), 2)
+        w = self.risk_model.get("weights", {})
+        w_sev = w.get("severity", 0.6)
+        w_crit = w.get("criticality", 0.4)
+        score = round((severity_val * w_sev) + (criticality_val * w_crit), 2)
 
-        if score >= 3.5:
+        thresholds = self.risk_model.get("thresholds", {})
+        t_critical = thresholds.get("CRITICAL", 3.5)
+        t_high = thresholds.get("HIGH", 2.5)
+        t_medium = thresholds.get("MEDIUM", 1.5)
+        if score >= t_critical:
             level = "CRITICAL"
-        elif score >= 2.5:
+        elif score >= t_high:
             level = "HIGH"
-        elif score >= 1.5:
+        elif score >= t_medium:
             level = "MEDIUM"
         else:
             level = "LOW"
@@ -309,7 +387,7 @@ class DecisionEngine:
 
         asset_id = alert.get("asset_id")
 
-        for pattern in CORRELATION_PATTERNS:
+        for pattern in self.correlation_patterns:
             window = pattern["window_minutes"]
             recent = self._trim_history(window)
 
@@ -378,6 +456,8 @@ class DecisionEngine:
             "system": "Unknown Asset",
             "criticality": "medium",
             "shutdown_risk": "unknown",
+            "zone_id": "unknown",
+            "purdue_level": "unknown",
         })
 
         risk = self.calculate_risk(alert, asset)
@@ -407,6 +487,8 @@ class DecisionEngine:
         if correlation:
             warning = f"!! Correlated attack pattern: {correlation['type']}"
 
+        zone_meta = self._resolve_asset_zone(asset)
+
         return {
             "id": f"INC-{uuid.uuid4().hex[:8].upper()}",
             "timestamp": datetime.now().isoformat(),
@@ -424,6 +506,8 @@ class DecisionEngine:
 
             "criticality": asset.get("criticality"),
             "shutdown_risk": asset.get("shutdown_risk"),
+            "zone_id": zone_meta["zone_id"],
+            "purdue_level": zone_meta["purdue_level"],
 
             "response_action": response["action"],
             "response_steps": response["steps"],

@@ -18,14 +18,16 @@ event_types = [
     "FIRMWARE_MODIFICATION"
 ]
 
-assets = [
-    "pump_controller_1",
-    "hvac_controller_1",
-    "valve_controller_1",
-    "plc_controller_1"
-    #"power_meter_1",
-    #"conveyor_controller_1"
-]
+assets_file = "data/ot_context/ot_assets.json"
+if os.path.exists(assets_file):
+    with open(assets_file) as f:
+        assets = list(json.load(f).keys())
+else:
+    assets = [
+        "pump_controller_1",
+        "hvac_controller",
+        "plc_controller_1",
+    ]
 
 severities = ["low", "medium", "high", "critical"]
 

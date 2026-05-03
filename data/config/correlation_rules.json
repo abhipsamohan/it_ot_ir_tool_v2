@@ -1,0 +1,35 @@
+[
+  {
+    "name": "COORDINATED_ATTACK",
+    "description": "Recon → access → PLC modification chain detected — coordinated multi-stage attack",
+    "required_events": ["NETWORK_SCAN", "FAILED_LOGIN", "PLC_PROGRAM_CHANGE"],
+    "count_threshold": 1,
+    "window_minutes": 60,
+    "same_asset": false
+  },
+  {
+    "name": "RECON_TO_ACCESS",
+    "description": "Network scan followed by login attempts — possible targeted intrusion",
+    "required_events": ["NETWORK_SCAN", "FAILED_LOGIN"],
+    "count_threshold": 1,
+    "window_minutes": 30,
+    "same_asset": false
+  },
+  {
+    "name": "BRUTE_FORCE",
+    "description": "Multiple failed logins on the same asset — possible brute-force attack",
+    "required_events": ["FAILED_LOGIN"],
+    "count_threshold": 5,
+    "window_minutes": 10,
+    "same_asset": true
+  },
+  {
+    "name": "LATERAL_MOVEMENT",
+    "description": "Failed logins across multiple different assets — possible lateral movement",
+    "required_events": ["FAILED_LOGIN"],
+    "count_threshold": 3,
+    "window_minutes": 10,
+    "same_asset": false,
+    "different_assets": true
+  }
+]

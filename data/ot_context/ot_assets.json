@@ -6,9 +6,10 @@
     "safety_impact": "Disruption to municipal water supply; potential chemical dosing failure affecting public health",
     "protocol": "DNP3",
     "network_segment": "CRITICAL",
-    "location": "Pune, Maharashtra"
+    "location": "Pune, Maharashtra",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   },
-
   "textile_mill_control": {
     "system": "Textile Mill Control System",
     "criticality": "high",
@@ -16,9 +17,10 @@
     "safety_impact": "Production halt; risk of machinery over-speed causing mechanical damage and worker injury",
     "protocol": "Profinet",
     "network_segment": "OT_SEGMENT_1",
-    "location": "Surat, Gujarat"
+    "location": "Surat, Gujarat",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   },
-
   "power_distribution_scada": {
     "system": "Power Distribution SCADA",
     "criticality": "critical",
@@ -26,9 +28,10 @@
     "safety_impact": "Loss of power to industrial zone; cascading failure risk for connected critical assets",
     "protocol": "DNP3",
     "network_segment": "CRITICAL",
-    "location": "Nagpur, Maharashtra"
+    "location": "Nagpur, Maharashtra",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   },
-
   "manufacturing_robot_ctrl": {
     "system": "Manufacturing Robot Controller",
     "criticality": "high",
@@ -36,9 +39,10 @@
     "safety_impact": "Uncontrolled robotic movement; risk of physical injury to operators on factory floor",
     "protocol": "Modbus",
     "network_segment": "OT_SEGMENT_1",
-    "location": "Chennai, Tamil Nadu"
+    "location": "Chennai, Tamil Nadu",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   },
-
   "hvac_controller": {
     "system": "HVAC System Controller",
     "criticality": "medium",
@@ -46,9 +50,10 @@
     "safety_impact": "Temperature and humidity excursion in server room or clean-room manufacturing area",
     "protocol": "BACnet",
     "network_segment": "OT_SEGMENT_2",
-    "location": "Bengaluru, Karnataka"
+    "location": "Bengaluru, Karnataka",
+    "zone_id": "ot_operations",
+    "purdue_level": "L2-L3"
   },
-
   "building_mgmt_system": {
     "system": "Building Management System",
     "criticality": "medium",
@@ -56,9 +61,10 @@
     "safety_impact": "Loss of environmental monitoring; fire suppression and access control may be affected",
     "protocol": "OPC-UA",
     "network_segment": "DMZ",
-    "location": "Hyderabad, Telangana"
+    "location": "Hyderabad, Telangana",
+    "zone_id": "ot_dmz",
+    "purdue_level": "L3.5"
   },
-
   "backup_power_system": {
     "system": "Backup Power System (UPS/Inverter Controller)",
     "criticality": "critical",
@@ -66,9 +72,10 @@
     "safety_impact": "Power failure to critical OT systems during grid outage; potential safety interlock loss",
     "protocol": "Modbus",
     "network_segment": "CRITICAL",
-    "location": "Mumbai, Maharashtra"
+    "location": "Mumbai, Maharashtra",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   },
-
   "network_gateway": {
     "system": "OT Network Gateway / Firewall",
     "criticality": "medium",
@@ -76,9 +83,10 @@
     "safety_impact": "Loss of OT network segmentation; IT-OT boundary may collapse allowing uncontrolled access",
     "protocol": "TCP/IP",
     "network_segment": "DMZ",
-    "location": "Delhi NCR"
+    "location": "Delhi NCR",
+    "zone_id": "ot_dmz",
+    "purdue_level": "L3.5"
   },
-
   "pump_controller_1": {
     "system": "Water Pump Controller (Legacy)",
     "criticality": "high",
@@ -86,9 +94,10 @@
     "safety_impact": "Water supply disruption to industrial cooling systems",
     "protocol": "Modbus",
     "network_segment": "OT_SEGMENT_1",
-    "location": "Ahmedabad, Gujarat"
+    "location": "Ahmedabad, Gujarat",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   },
-
   "plc_controller_1": {
     "system": "Main PLC Controller",
     "criticality": "critical",
@@ -96,6 +105,8 @@
     "safety_impact": "Factory-wide process disruption; potential loss of safety interlock functionality",
     "protocol": "Modbus",
     "network_segment": "CRITICAL",
-    "location": "Coimbatore, Tamil Nadu"
+    "location": "Coimbatore, Tamil Nadu",
+    "zone_id": "ot_control",
+    "purdue_level": "L1"
   }
 }

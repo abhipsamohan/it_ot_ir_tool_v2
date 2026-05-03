@@ -4,6 +4,7 @@ import json
 import threading
 import time
 import traceback
+from urllib import request as urllib_request
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -20,6 +21,9 @@ _ESCALATION_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
     "data", "config", "escalation.json",
 )
+
+_API_KEY = os.environ.get("API_KEY", "").strip()
+_OUTBOUND_WEBHOOK_URL = os.environ.get("OUTBOUND_WEBHOOK_URL", "").strip()
 
 # ---------------------------------------------------------------------------
 # BACKGROUND AUTO-SCAN THREAD
@@ -64,6 +68,15 @@ def ingest_alert():
     Auto-detects format and processes through the decision engine.
     """
 
+    if _API_KEY:
+        supplied = request.headers.get("X-API-Key", "").strip()
+        if not supplied:
+            auth = request.headers.get("Authorization", "")
+            if auth.startswith("Bearer "):
+                supplied = auth.replace("Bearer ", "", 1).strip()
+        if supplied != _API_KEY:
+            return jsonify({"error": "unauthorized"}), 401
+
     # Get raw data — JSON body or plain-text CEF/Syslog string
     if request.is_json:
         raw_data = request.get_json()
@@ -80,6 +93,19 @@ def ingest_alert():
 
     if incident is None:
         return jsonify({"error": "Failed to process alert"}), 500
+
+    if _OUTBOUND_WEBHOOK_URL and incident.get("risk_level") in {"HIGH", "CRITICAL"}:
+        try:
+            payload = json.dumps(incident).encode("utf-8")
+            req = urllib_request.Request(
+                _OUTBOUND_WEBHOOK_URL,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            urllib_request.urlopen(req, timeout=2)  # nosec B310
+        except Exception as e:
+            print(f"[webhook] failed: {e}", file=sys.stderr)
 
     return jsonify(incident), 201
 
@@ -187,6 +213,11 @@ def get_escalation_config():
         with open(_ESCALATION_PATH) as f:
             return app.response_class(f.read(), mimetype="application/json")
     return jsonify({"contacts": [], "thresholds": {}})
+
+
+@app.route("/api/health")
+def health():
+    return jsonify({"status": "ok", "service": "it-ot-ir-middleware"})
 
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+{
+  "weights": {
+    "severity": 0.6,
+    "criticality": 0.4
+  },
+  "thresholds": {
+    "CRITICAL": 3.5,
+    "HIGH": 2.5,
+    "MEDIUM": 1.5
+  }
+}
