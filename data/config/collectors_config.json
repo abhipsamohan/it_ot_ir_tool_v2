@@ -1,0 +1,59 @@
+{
+  "_comment": "Real-time protocol collector configuration for IT-OT IR Tool v2.",
+  "_description": "Each entry in 'devices' defines one collector thread. Disable entries with 'enabled: false'.",
+  "devices": [
+    {
+      "_comment": "Water treatment PLC — Modbus TCP on standard port 502",
+      "asset_id": "water_treatment_plc",
+      "protocol": "modbus",
+      "host": "10.0.1.10",
+      "port": 502,
+      "unit_id": 1,
+      "registers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "poll_interval_s": 30,
+      "enabled": true
+    },
+    {
+      "_comment": "Manufacturing robot controller — Modbus TCP",
+      "asset_id": "manufacturing_robot_ctrl",
+      "protocol": "modbus",
+      "host": "10.0.1.20",
+      "port": 502,
+      "unit_id": 1,
+      "registers": [0, 1, 2, 3, 4, 5, 100, 101, 102, 103],
+      "poll_interval_s": 15,
+      "enabled": true
+    },
+    {
+      "_comment": "Backup power system UPS controller — Modbus TCP",
+      "asset_id": "backup_power_system",
+      "protocol": "modbus",
+      "host": "10.0.1.30",
+      "port": 502,
+      "unit_id": 1,
+      "registers": [0, 1, 2, 3, 4],
+      "poll_interval_s": 60,
+      "enabled": true
+    },
+    {
+      "_comment": "Water treatment SCADA DNP3 outstation",
+      "asset_id": "power_distribution_scada",
+      "protocol": "dnp3",
+      "host": "10.0.1.50",
+      "port": 20000,
+      "poll_interval_s": 60,
+      "failure_threshold": 3,
+      "enabled": true
+    },
+    {
+      "_comment": "Textile mill SCADA DNP3 outstation (disabled by default — update host first)",
+      "asset_id": "textile_mill_control",
+      "protocol": "dnp3",
+      "host": "10.0.2.10",
+      "port": 20000,
+      "poll_interval_s": 60,
+      "failure_threshold": 3,
+      "enabled": false
+    }
+  ]
+}

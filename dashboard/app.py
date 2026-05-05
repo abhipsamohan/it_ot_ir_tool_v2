@@ -10,6 +10,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from flask import Flask, render_template, jsonify, request
 from engine.decision_engine import DecisionEngine
 from engine.adapters.detector import FormatDetector
+from engine.collectors import ProtocolCollectorManager
+from engine.discovery import AssetDiscoveryManager
 
 app = Flask(__name__)
 
@@ -38,6 +40,16 @@ def _background_scan():
 
 _scan_thread = threading.Thread(target=_background_scan, daemon=True)
 _scan_thread.start()
+
+# ---------------------------------------------------------------------------
+# BACKGROUND PROTOCOL COLLECTORS
+# Starts real-time Modbus/DNP3 monitoring threads for each device defined in
+# data/config/collectors_config.json — closing the "no real-time protocol
+# collectors" research gap.
+# ---------------------------------------------------------------------------
+
+_collector_mgr = ProtocolCollectorManager(engine)
+_collector_mgr.start()
 
 
 # ---------------------------------------------------------------------------
@@ -187,6 +199,60 @@ def get_escalation_config():
         with open(_ESCALATION_PATH) as f:
             return app.response_class(f.read(), mimetype="application/json")
     return jsonify({"contacts": [], "thresholds": {}})
+
+
+# ---------------------------------------------------------------------------
+# OT ASSET AUTO-DISCOVERY
+# Closes the "Asset registry is static" research gap.
+# ---------------------------------------------------------------------------
+
+@app.route("/api/discovery/start", methods=["POST"])
+def start_discovery():
+    """
+    Trigger a network-based OT asset discovery scan.
+
+    Body (JSON):
+      {
+        "network": "10.0.1.0/24",    # required — CIDR range to scan
+        "dry_run": false              # optional — if true, do not update registry
+      }
+
+    Returns a summary of discovered assets.
+    """
+    data = request.get_json(silent=True) or {}
+    network = (data.get("network") or "").strip()
+    if not network:
+        return jsonify({"error": "'network' field is required (e.g. '10.0.1.0/24')"}), 400
+
+    dry_run = bool(data.get("dry_run", False))
+
+    try:
+        mgr = AssetDiscoveryManager()
+        summary = mgr.get_summary(network) if dry_run else None
+        if not dry_run:
+            assets = mgr.discover(network=network)
+            auto = {k: v for k, v in assets.items() if v.get("auto_discovered")}
+            summary = {
+                "network_scanned": network,
+                "total_assets": len(assets),
+                "auto_discovered": len(auto),
+            }
+            # Reload the engine's asset registry so new devices are recognised immediately
+            engine.reload_assets()
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:  # noqa: BLE001
+        return jsonify({"error": f"Discovery failed: {exc}"}), 500
+
+    return jsonify(summary), 200
+
+
+@app.route("/api/collectors/status")
+def collectors_status():
+    """Returns the number of active real-time protocol collector threads."""
+    return jsonify({
+        "active_collectors": _collector_mgr.active_count,
+    })
 
 
 if __name__ == "__main__":
