@@ -239,10 +239,11 @@ def start_discovery():
             }
             # Reload the engine's asset registry so new devices are recognised immediately
             engine.reload_assets()
-    except ValueError as exc:
-        return jsonify({"error": str(exc)}), 400
+    except ValueError:
+        return jsonify({"error": "Invalid network range — provide a valid CIDR address (e.g. 10.0.1.0/24)"}), 400
     except Exception as exc:  # noqa: BLE001
-        return jsonify({"error": f"Discovery failed: {exc}"}), 500
+        print(f"[discovery] error: {exc}", file=sys.stderr)
+        return jsonify({"error": "Discovery scan failed — check server logs"}), 500
 
     return jsonify(summary), 200
 

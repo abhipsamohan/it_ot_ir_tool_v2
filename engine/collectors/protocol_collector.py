@@ -56,6 +56,11 @@ from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+# Threshold for "large value jump" anomaly detection.
+# A single Modbus register change larger than this delta is flagged as
+# SUSPICIOUS_BEHAVIOR in addition to any PLC_PROGRAM_CHANGE alert.
+_LARGE_JUMP_THRESHOLD = 10000
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

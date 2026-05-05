@@ -36,7 +36,7 @@
       "enabled": true
     },
     {
-      "_comment": "Water treatment SCADA DNP3 outstation",
+      "_comment": "Power distribution SCADA DNP3 outstation",
       "asset_id": "power_distribution_scada",
       "protocol": "dnp3",
       "host": "10.0.1.50",
