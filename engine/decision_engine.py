@@ -2,7 +2,7 @@ import json
 import os
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from engine.database import IncidentDatabase
 
@@ -13,7 +13,7 @@ from engine.database import IncidentDatabase
 # across the rolling alert history, overrides individual risk scores.
 # ---------------------------------------------------------------------------
 
-CORRELATION_PATTERNS = [
+CORRELATION_PATTERNS: List[Dict[str, Any]] = [
     # Evaluated in order — more specific (longer) chains first to avoid
     # shorter patterns shadowing more severe multi-stage detections.
     {
@@ -72,29 +72,30 @@ class DecisionEngine:
 
     # --------------------------------------------------
 
-    def load_assets(self) -> Dict:
+    def load_assets(self) -> Dict[str, Any]:
 
         if not os.path.exists(self.context_file):
             return {}
 
         with open(self.context_file) as f:
-            return json.load(f)
+            return cast(Dict[str, Any], json.load(f))
 
-    def reload_assets(self) -> Dict:
+    def reload_assets(self) -> Dict[str, Any]:
         """Reload OT asset context from disk without restarting the engine."""
 
-        self.assets = self.load_assets()
+        assets: Dict[str, Any] = self.load_assets()
+        self.assets = assets
         self.network_segment_mapping = self.load_network_segment_mapping()
-        return self.assets
+        return assets
 
-    def load_network_segment_mapping(self) -> Dict:
+    def load_network_segment_mapping(self) -> Dict[str, Any]:
         """Load network_segment -> zone/purdue mapping from config."""
         if not os.path.exists(self.zones_file):
             return {}
         try:
             with open(self.zones_file) as f:
                 data = json.load(f)
-            return data.get("network_segment_mapping", {})
+            return cast(Dict[str, Any], data.get("network_segment_mapping", {}))
         except Exception:
             return {}
 
@@ -518,7 +519,7 @@ class DecisionEngine:
 
     def scan_alerts(self) -> List[Dict]:
 
-        incidents = []
+        incidents: List[Dict[str, Any]] = []
 
         if not os.path.exists(self.alerts_dir):
             return incidents
@@ -536,6 +537,6 @@ class DecisionEngine:
 
     # --------------------------------------------------
 
-    def get_incidents(self) -> List[Dict]:
+    def get_incidents(self) -> List[Dict[str, Any]]:
 
-        return self.db.get_incidents()
+        return cast(List[Dict[str, Any]], self.db.get_incidents())
