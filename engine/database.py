@@ -2,7 +2,7 @@
 
 import sqlite3
 import os
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 import json
 from datetime import datetime, timedelta
 
@@ -253,7 +253,7 @@ class IncidentDatabase:
     # --------------------------------------------------
     # SHIFT HANDOVER SUMMARY
 
-    def get_shift_summary(self, since_iso: str = None) -> Dict:
+    def get_shift_summary(self, since_iso: Optional[str] = None) -> Dict[str, Any]:
 
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -278,9 +278,9 @@ class IncidentDatabase:
         conn.close()
 
         total = len(rows)
-        by_risk = {}
-        by_event = {}
-        by_asset = {}
+        by_risk: Dict[str, int] = {}
+        by_event: Dict[str, int] = {}
+        by_asset: Dict[str, int] = {}
         open_count = 0
         acknowledged_count = 0
 

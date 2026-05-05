@@ -25,3 +25,8 @@ data/incidents.db
 .vscode/
 *.DS_Store
 Thumbs.db
+
+# Test / coverage artifacts
+.coverage
+htmlcov/
+.pytest_cache/

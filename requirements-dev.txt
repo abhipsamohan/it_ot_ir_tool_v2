@@ -1,0 +1,9 @@
+# Production dependencies (included by reference)
+-r requirements.txt
+
+# Testing
+pytest>=7.4
+pytest-cov>=4.1
+
+# Static type checking
+mypy>=1.7
