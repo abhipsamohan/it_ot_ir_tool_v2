@@ -234,7 +234,7 @@ class ModbusCollector:
         # Detect suspiciously large single-register jumps (value anomaly)
         for reg, val in current.items():
             old = original_baseline.get(reg, val)
-            if abs(val - old) > 10000:
+            if abs(val - old) > _LARGE_JUMP_THRESHOLD:
                 detail = f"Large value jump on reg[{reg}]: {old} → {val}"
                 logger.warning("[modbus:%s] %s", self.asset_id, detail)
                 alert = _build_alert(

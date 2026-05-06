@@ -379,10 +379,10 @@ def _device_to_asset_entry(device: Dict[str, Any]) -> Dict[str, Any]:
         "system": f"{system_name} ({vendor})" if vendor != "Unknown vendor" else system_name,
         "criticality": "medium",           # conservative default
         "shutdown_risk": "medium",
-        "safety_impact": "Unknown — review and update manually",
+        "safety_impact": "Unknown - review and update manually",
         "protocol": protocol,
         "network_segment": "AUTO_DISCOVERED",
-        "location": "Auto-discovered — update manually",
+        "location": "Auto-discovered - update manually",
         "zone_id": "ot_operations",        # conservative Purdue L2/L3 default
         "purdue_level": "L2-L3",
         "auto_discovered": True,
